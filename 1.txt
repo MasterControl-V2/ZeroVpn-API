@@ -1,606 +1,131 @@
-// fake-address-api Worker
-// Custom API for generating real-looking addresses
-// Supports 40 countries with real cities, streets, and correct postal formats
+const C = {
+'US':{n:'United States',f:'🇺🇸',c:'USD',p:'+1',ci:[['New York','New York','100',['Broadway','5th Avenue','Wall Street','Park Avenue','Madison Avenue']],['Los Angeles','California','900',['Hollywood Boulevard','Sunset Boulevard','Rodeo Drive','Wilshire Boulevard','Melrose Avenue']],['Chicago','Illinois','606',['Michigan Avenue','State Street','Clark Street','Halsted Street','Ashland Avenue']],['Houston','Texas','770',['Main Street','Westheimer Road','Richmond Avenue','Kirby Drive','Montrose Boulevard']],['Phoenix','Arizona','850',['Central Avenue','Camelback Road','Indian School Road','Thomas Road','McDowell Road']]]},
+'UK':{n:'United Kingdom',f:'🇬🇧',c:'GBP',p:'+44',ci:[['London','England','SW1A',['Oxford Street','Regent Street','Bond Street','Baker Street','Abbey Road']],['Birmingham','England','B1',['New Street','Corporation Street','Bull Street','High Street','Broad Street']],['Manchester','England','M1',['Deansgate','Oxford Road','Market Street','King Street','Piccadilly']],['Glasgow','Scotland','G1',['Buchanan Street','Argyle Street','Sauchiehall Street','Hope Street','Renfield Street']],['Edinburgh','Scotland','EH1',['Royal Mile','Princes Street','George Street','Rose Street','Queen Street']]]},
+'CA':{n:'Canada',f:'🇨🇦',c:'CAD',p:'+1',ci:[['Toronto','Ontario','M5H',['Yonge Street','Queen Street West','King Street West','Bloor Street','Dundas Street']],['Montreal','Quebec','H3Z',['Rue Sainte-Catherine','Boulevard Saint-Laurent','Rue Sherbrooke','Rue Saint-Denis','Rue Peel']],['Vancouver','British Columbia','V6B',['Robson Street','Granville Street','Burrard Street','Georgia Street','Davie Street']],['Calgary','Alberta','T2P',['Stephen Avenue','8th Avenue SW','17th Avenue SW','Macleod Trail','Centre Street']],['Ottawa','Ontario','K1P',['Bank Street','Rideau Street','Elgin Street','Sparks Street','Wellington Street']]]},
+'AU':{n:'Australia',f:'🇦🇺',c:'AUD',p:'+61',ci:[['Sydney','New South Wales','2000',['George Street','Pitt Street','Oxford Street','King Street','Elizabeth Street']],['Melbourne','Victoria','3000',['Bourke Street','Collins Street','Flinders Street','Swanston Street','Chapel Street']],['Brisbane','Queensland','4000',['Queen Street','Adelaide Street','George Street','Edward Street','Ann Street']],['Perth','Western Australia','6000',['St Georges Terrace','Hay Street','Murray Street','Wellington Street','Barrack Street']],['Adelaide','South Australia','5000',['Rundle Mall','King William Street','North Terrace','Hindley Street','Grenfell Street']]]},
+'DE':{n:'Germany',f:'🇩🇪',c:'EUR',p:'+49',ci:[['Berlin','Berlin','101',['Unter den Linden','Kurfürstendamm','Friedrichstraße','Alexanderplatz','Potsdamer Platz']],['Hamburg','Hamburg','200',['Mönckebergstraße','Jungfernstieg','Reeperbahn','Schanzenstraße','Speicherstadt']],['Munich','Bavaria','803',['Marienplatz','Leopoldstraße','Maximilianstraße','Kaufingerstraße','Sendlinger Straße']],['Cologne','North Rhine-Westphalia','506',['Hohe Straße','Schildergasse','Ehrenstraße','Breite Straße','Neumarkt']],['Frankfurt','Hesse','603',['Zeil','Goethestraße','Kaiserstraße','Mainzer Landstraße','Berger Straße']]]},
+'FR':{n:'France',f:'🇫🇷',c:'EUR',p:'+33',ci:[['Paris','Île-de-France','750',['Champs-Élysées','Rue de Rivoli','Boulevard Saint-Germain','Rue de la Paix','Avenue Montaigne']],['Marseille','Provence','130',['La Canebière','Rue Saint-Ferréol','Cours Julien','Rue Paradis','Avenue du Prado']],['Lyon','Auvergne','690',['Rue de la République','Rue Victor Hugo','Cours Vitton','Avenue Jean Jaurès','Rue Garibaldi']],['Toulouse','Occitanie','310',['Rue d\'Alsace-Lorraine','Rue Saint-Rome','Rue du Taur','Allées Jean Jaurès','Boulevard de Strasbourg']],['Nice','Provence','060',['Promenade des Anglais','Avenue Jean Médecin','Rue Masséna','Boulevard Victor Hugo','Cours Saleya']]]},
+'JP':{n:'Japan',f:'🇯🇵',c:'JPY',p:'+81',ci:[['Tokyo','Tokyo','100',['Chiyoda','Ginza','Shibuya','Shinjuku','Roppongi']],['Yokohama','Kanagawa','220',['Minato Mirai','Kannai','Noge','Isezakicho','Motomachi']],['Osaka','Osaka','530',['Umeda','Namba','Shinsaibashi','Dotonbori','Tennoji']],['Nagoya','Aichi','450',['Sakae','Nagoya Station','Osu','Kanayama','Yabacho']],['Kyoto','Kyoto','600',['Shijo','Kawaramachi','Gion','Kiyomizu','Arashiyama']]]},
+'MM':{n:'Myanmar',f:'🇲🇲',c:'MMK',p:'+95',ci:[['Yangon','Yangon Region','111',['Sule Pagoda Road','Maha Bandula Road','Anawrahta Road','Bogyoke Aung San Road','Pyay Road']],['Mandalay','Mandalay Region','050',['Zegyo Market','84th Street','26th Street','78th Street','35th Street']],['Naypyidaw','Naypyidaw','150',['Yaza Htarni Road','Naypyidaw Taw Win','Zabuthiri','Ottarathiri','Pobbathiri']],['Mawlamyine','Mon State','120',['Strand Road','Lower Main Road','Upper Main Road','Bogyoke Road','Thaton Road']],['Taunggyi','Shan State','060',['Bogyoke Road','Zay Tan','Kandawgyi','Shwe Nyaung','Aye Thar Yar']]]},
+'TH':{n:'Thailand',f:'🇹🇭',c:'THB',p:'+66',ci:[['Bangkok','Bangkok','101',['Sukhumvit Road','Silom Road','Sathorn Road','Khao San Road','Rama I Road']],['Chiang Mai','Chiang Mai','500',['Nimmanhaemin Road','Tha Phae Road','Ratchadamnoen Road','Moon Muang Road','Chang Klan Road']],['Phuket','Phuket','830',['Bangla Road','Rat-U-Thit 200 Pi Road','Thaweewong Road','Phuket Road','Chalong Road']],['Pattaya','Chonburi','201',['Beach Road','Walking Street','Second Road','Third Road','Sukhumvit Road']],['Hat Yai','Songkhla','901',['Niphat Uthit 1 Road','Niphat Uthit 2 Road','Niphat Uthit 3 Road','Phetkasem Road','Sriphuwanart Road']]]},
+'SG':{n:'Singapore',f:'🇸🇬',c:'SGD',p:'+65',ci:[['Singapore','Central Region','018',['Orchard Road','Marina Bay Sands','Sentosa','Bugis Street','Clarke Quay']],['Jurong','West Region','609',['Jurong East Street','Jurong West Street','Boon Lay Way','Pioneer Road','Tuas Road']],['Woodlands','North Region','730',['Woodlands Avenue','Woodlands Drive','Woodlands Street','Marsiling Road','Admiralty Road']],['Tampines','East Region','520',['Tampines Avenue','Tampines Street','Pasir Ris Drive','Bedok North Road','Simei Street']],['Sengkang','North-East Region','790',['Sengkang Avenue','Sengkang East Road','Sengkang West Road','Sengkang Square','Compassvale Drive']]]},
+'IT':{n:'Italy',f:'🇮🇹',c:'EUR',p:'+39',ci:[['Rome','Lazio','001',['Via del Corso','Via Veneto','Via Nazionale','Via Condotti','Via del Babuino']],['Milan','Lombardy','201',['Via Montenapoleone','Corso Buenos Aires','Via Torino','Via Dante','Via Brera']],['Naples','Campania','801',['Via Toledo','Via Chiaia','Corso Umberto I','Via Partenope','Via Caracciolo']],['Turin','Piedmont','101',['Via Roma','Via Po','Via Garibaldi','Via Lagrange','Via Carlo Alberto']],['Florence','Tuscany','501',['Via de\' Tornabuoni','Via Roma','Via Calzaiuoli','Via del Proconsolo','Via de\' Benci']]]},
+'ES':{n:'Spain',f:'🇪🇸',c:'EUR',p:'+34',ci:[['Madrid','Community of Madrid','280',['Gran Vía','Calle de Alcalá','Paseo de la Castellana','Calle de Serrano','Calle Mayor']],['Barcelona','Catalonia','080',['La Rambla','Passeig de Gràcia','Carrer de Balmes','Avinguda Diagonal','Carrer de Ferran']],['Valencia','Valencian Community','460',['Carrer de Colón','Plaça de l\'Ajuntament','Carrer de Xàtiva','Carrer de la Pau','Carrer de Sagunt']],['Seville','Andalusia','410',['Avenida de la Constitución','Calle Sierpes','Calle Tetuán','Calle Betis','Calle San Fernando']],['Bilbao','Basque Country','480',['Gran Vía de Don Diego López de Haro','Calle Ledesma','Calle Ercilla','Paseo del Arenal','Calle Diputación']]]},
+'CH':{n:'Switzerland',f:'🇨🇭',c:'CHF',p:'+41',ci:[['Zurich','Zurich','800',['Bahnhofstrasse','Limmatquai','Rennweg','Niederdorfstrasse','Langstrasse']],['Geneva','Geneva','120',['Rue du Rhône','Rue de la Croix-d\'Or','Rue du Marché','Rue de Rive','Quai du Mont-Blanc']],['Basel','Basel-Stadt','400',['Freie Strasse','Steinenvorstadt','Aeschenvorstadt','Greifengasse','Clarastrasse']],['Lausanne','Vaud','100',['Rue de Bourg','Avenue de la Gare','Place Saint-François','Rue du Pont','Rue de la Palud']],['Bern','Bern','300',['Spitalgasse','Marktgasse','Kramgasse','Gerechtigkeitsgasse','Bundesplatz']]]},
+'SE':{n:'Sweden',f:'🇸🇪',c:'SEK',p:'+46',ci:[['Stockholm','Stockholm County','111',['Drottninggatan','Sveavägen','Kungsgatan','Vasagatan','Hamngatan']],['Gothenburg','Västra Götaland','411',['Avenyn','Kungsportsavenyn','Vallgatan','Magasinsgatan','Linnégatan']],['Malmö','Skåne County','211',['Södergatan','Storgatan','Amiralsgatan','Baltzarsgatan','Stora Nygatan']],['Uppsala','Uppsala County','751',['Dragarbrunnsgatan','Kungsängsgatan','Svartbäcksgatan','Stora Torget','Vaksalagatan']],['Linköping','Östergötland','581',['Storgatan','Nygatan','Drottninggatan','Kungsgatan','Repslagaregatan']]]},
+'NO':{n:'Norway',f:'🇳🇴',c:'NOK',p:'+47',ci:[['Oslo','Oslo','001',['Karl Johans gate','Storgata','Grensen','Youngstorget','Akersgata']],['Bergen','Vestland','500',['Torgallmenningen','Strandgaten','Bryggen','Nygårdsgaten','Vaskerelven']],['Trondheim','Trøndelag','700',['Nordre gate','Olav Tryggvasons gate','Munkegata','Kongens gate','Prinsens gate']],['Stavanger','Rogaland','400',['Kirkegata','Øvre Holmegate','Klubbgata','Domkirkeplassen','Skagenkaien']],['Drammen','Viken','300',['Bragernes torg','Storgata','Engene','Nedre Storgate','Øvre Storgate']]]},
+'DK':{n:'Denmark',f:'🇩🇰',c:'DKK',p:'+45',ci:[['Copenhagen','Capital Region','100',['Strøget','Nyhavn','Vesterbrogade','Nørrebrogade','Østerbrogade']],['Aarhus','Central Denmark','800',['Store Torv','Søndergade','Ryesgade','Banegårdsgade','Vestergade']],['Odense','Southern Denmark','500',['Kongensgade','Vestergade','Østergade','Nørregade','Søndergade']],['Aalborg','North Denmark','900',['Boulevarden','Nytorv','Gammel Torv','Algade','Bispensgade']],['Esbjerg','Southern Denmark','670',['Kongensgade','Torvegade','Skolegade','Strandbygade','Nørregade']]]},
+'FI':{n:'Finland',f:'🇫🇮',c:'EUR',p:'+358',ci:[['Helsinki','Uusimaa','001',['Mannerheimintie','Aleksanterinkatu','Esplanadi','Fredrikinkatu','Bulevardi']],['Espoo','Uusimaa','021',['Tapiolan keskustie','Espoon keskus','Leppävaarankatu','Otaniementie','Keilaranta']],['Tampere','Pirkanmaa','331',['Hämeenkatu','Aleksis Kiven katu','Satakunnankatu','Itsenäisyydenkatu','Kalevan puistotie']],['Vantaa','Uusimaa','013',['Tikkurilantie','Asematie','Kielotie','Unikkotie','Talvikkitie']],['Oulu','North Ostrobothnia','901',['Rotuaari','Kirkkokatu','Pakkahuoneenkatu','Isokatu','Rautatienkatu']]]},
+'IE':{n:'Ireland',f:'🇮🇪',c:'EUR',p:'+353',ci:[['Dublin','Leinster','D01',['O\'Connell Street','Grafton Street','Dame Street','Henry Street','Temple Bar']],['Cork','Munster','T12',['Patrick Street','Oliver Plunkett Street','Grand Parade','Washington Street','St Patrick\'s Street']],['Limerick','Munster','V94',['O\'Connell Street','William Street','Cruises Street','Thomas Street','Patrick Street']],['Galway','Connacht','H91',['Shop Street','Eyre Square','Quay Street','Cross Street','High Street']],['Waterford','Munster','X91',['The Quay','Broad Street','Barronstrand Street','Michael Street','John Street']]]},
+'NZ':{n:'New Zealand',f:'🇳🇿',c:'NZD',p:'+64',ci:[['Auckland','Auckland','1010',['Queen Street','Karangahape Road','Ponsonby Road','Dominion Road','Symonds Street']],['Wellington','Wellington','6011',['Lambton Quay','Courtenay Place','Cuba Street','Willis Street','Manners Street']],['Christchurch','Canterbury','8011',['Colombo Street','Riccarton Road','Hagley Avenue','Papanui Road','Cranford Street']],['Hamilton','Waikato','3204',['Victoria Street','Ward Street','Alexandra Street','Anglesea Street','Collingwood Street']],['Dunedin','Otago','9016',['George Street','Princes Street','Cumberland Street','Stuart Street','Octagon']]]},
+'TR':{n:'Turkey',f:'🇹🇷',c:'TRY',p:'+90',ci:[['Istanbul','Istanbul','340',['İstiklal Caddesi','Bağdat Caddesi','Abdi İpekçi Caddesi','Rumeli Caddesi','Halaskargazi Caddesi']],['Ankara','Ankara','060',['Atatürk Bulvarı','Kızılay Meydanı','Tunalı Hilmi Caddesi','Cinnah Caddesi','Çankaya Caddesi']],['Izmir','İzmir','350',['Kordon','Kıbrıs Şehitleri Caddesi','Alsancak','Plevne Bulvarı','Mithatpaşa Caddesi']],['Bursa','Bursa','160',['Atatürk Caddesi','Cumhuriyet Caddesi','İnebey Caddesi','Fevzi Çakmak Caddesi','Mudanya Caddesi']],['Antalya','Antalya','070',['Konyaaltı Caddesi','Lara Caddesi','Atatürk Bulvarı','Cumhuriyet Caddesi','Işıklar Caddesi']]]},
+'AE':{n:'United Arab Emirates',f:'🇦🇪',c:'AED',p:'+971',ci:[['Dubai','Dubai','00000',['Sheikh Zayed Road','Jumeirah Beach Road','Al Wasl Road','Al Khaleej Road','Al Mina Road']],['Abu Dhabi','Abu Dhabi','00000',['Corniche Road','Hamdan Street','Khalifa Street','Electra Street','Salam Street']],['Sharjah','Sharjah','00000',['King Faisal Street','Al Wahda Street','Corniche Street','Al Ittihad Road','Al Nahda Street']],['Al Ain','Abu Dhabi','00000',['Khalifa bin Zayed Street','Al Ain Road','Zayed bin Sultan Street','Hamdan Street','Al Jimi']],['Ajman','Ajman','00000',['Sheikh Rashid bin Humaid Street','Sheikh Zayed Road','Al Ittihad Street','Corniche Road','Al Nuaimiya']]]},
+'SA':{n:'Saudi Arabia',f:'🇸🇦',c:'SAR',p:'+966',ci:[['Riyadh','Riyadh Province','115',['King Fahd Road','Olaya Street','Tahlia Street','King Abdullah Road','Sitteen Street']],['Jeddah','Mecca Province','210',['Tahlia Street','Corniche Road','Prince Sultan Road','Madinah Road','Palestine Street']],['Mecca','Mecca Province','219',['King Abdul Aziz Road','Ibrahim Al Khalil Road','Al Aziziyah','Al Haram','Ajyad']],['Medina','Madinah Province','200',['King Fahd Road','Quba Road','Al Haram','Al Aziziyah','Al Awaali']],['Dammam','Eastern Province','314',['King Fahd Road','King Saud Road','Corniche Road','Al Khaleej Road','Al Shatea']]]},
+'PK':{n:'Pakistan',f:'🇵🇰',c:'PKR',p:'+92',ci:[['Karachi','Sindh','740',['M.A. Jinnah Road','Shahrah-e-Faisal','I.I. Chundrigar Road','Tariq Road','Clifton Road']],['Lahore','Punjab','540',['Mall Road','Ferozepur Road','Canal Road','Main Boulevard Gulberg','MM Alam Road']],['Faisalabad','Punjab','380',['Jhang Road','Sargodha Road','Jaranwala Road','Samundri Road','Canal Road']],['Rawalpindi','Punjab','460',['Murree Road','Peshawar Road','The Mall','Bank Road','Committee Chowk']],['Islamabad','Islamabad','440',['Blue Area','Jinnah Avenue','Constitution Avenue','Kashmir Highway','Srinagar Highway']]]},
+'BD':{n:'Bangladesh',f:'🇧🇩',c:'BDT',p:'+880',ci:[['Dhaka','Dhaka Division','100',['Gulshan Avenue','Banani Road','Dhanmondi Road','Mirpur Road','Motijheel']],['Chittagong','Chittagong','400',['Agrabad','GEC Circle','CDA Avenue','Khatunganj','Chawkbazar']],['Khulna','Khulna','910',['Khan Jahan Ali Road','Sonadanga','Boyra','Khalishpur','Daulatpur']],['Rajshahi','Rajshahi','600',['Shaheb Bazar','Alupatti','Kazihata','Uposhohor','Binodpur']],['Sylhet','Sylhet','310',['Zindabazar','Bandar Bazar','Ambarkhana','Subid Bazar','Tilagarh']]]},
+'LK':{n:'Sri Lanka',f:'🇱🇰',c:'LKR',p:'+94',ci:[['Colombo','Western Province','001',['Galle Road','Galle Face','Pettah','Fort','Bambalapitiya']],['Kandy','Central Province','200',['Dalada Veediya','Colombo Street','Peradeniya Road','Kandy Lake','King Street']],['Galle','Southern Province','800',['Main Street','Church Street','Lighthouse Street','Rampart Street','Pedlar Street']],['Jaffna','Northern Province','400',['Hospital Road','Main Street','Kasthuriyar Road','Stanley Road','Temple Road']],['Negombo','Western Province','115',['Lewis Place','Beach Road','Main Street','St. Joseph Mawatha','Porutota Road']]]},
+'NP':{n:'Nepal',f:'🇳🇵',c:'NPR',p:'+977',ci:[['Kathmandu','Bagmati Province','44600',['Durbar Marg','New Road','Thamel','Basantapur','Asan']],['Pokhara','Gandaki Province','33700',['Lakeside','Baidam Road','Chipledhunga','Prithvi Chowk','Sabhagriha Chowk']],['Lalitpur','Bagmati Province','44700',['Patan Durbar Square','Mangal Bazar','Jhamsikhel','Pulchowk','Kupondole']],['Bharatpur','Bagmati Province','44200',['Narayangarh','Main Road','Lions Chowk','Chaubishkoti','Bharatpur Height']],['Biratnagar','Koshi Province','56613',['Main Road','Traffic Chowk','Golchowk','Rani','Dulari']]]},
+'MY':{n:'Malaysia',f:'🇲🇾',c:'MYR',p:'+60',ci:[['Kuala Lumpur','Federal Territory','500',['Jalan Bukit Bintang','Jalan Ampang','Jalan Sultan Ismail','Jalan Tun Razak','Jalan Pudu']],['George Town','Penang','100',['Lebuh Chulia','Jalan Penang','Lebuh Armenian','Lebuh Campbell','Lebuh Bishop']],['Ipoh','Perak','300',['Jalan Sultan Idris Shah','Jalan Bandar Timah','Jalan Panglima','Jalan Market','Jalan Sultan Yussuf']],['Johor Bahru','Johor','800',['Jalan Wong Ah Fook','Jalan Tun Abdul Razak','Jalan Ibrahim','Jalan Trus','Jalan Dhoby']],['Kuching','Sarawak','930',['Jalan Main Bazaar','Jalan Carpenter','Jalan Padungan','Jalan India','Jalan Pearl']]]},
+'ID':{n:'Indonesia',f:'🇮🇩',c:'IDR',p:'+62',ci:[['Jakarta','DKI Jakarta','101',['Jalan Thamrin','Jalan Sudirman','Jalan Gatot Subroto','Jalan Rasuna Said','Jalan Hayam Wuruk']],['Surabaya','East Java','601',['Jalan Tunjungan','Jalan Basuki Rahmat','Jalan Darmo','Jalan Diponegoro','Jalan Pemuda']],['Bandung','West Java','401',['Jalan Asia Afrika','Jalan Braga','Jalan Dago','Jalan Riau','Jalan Merdeka']],['Medan','North Sumatra','201',['Jalan Gatot Subroto','Jalan Merdeka','Jalan Ahmad Yani','Jalan Diponegoro','Jalan Sudirman']],['Denpasar','Bali','801',['Jalan Gajah Mada','Jalan Teuku Umar','Jalan Diponegoro','Jalan Sudirman','Jalan Hayam Wuruk']]]},
+'PH':{n:'Philippines',f:'🇵🇭',c:'PHP',p:'+63',ci:[['Manila','Metro Manila','1000',['Roxas Boulevard','Ayala Avenue','EDSA','Ortigas Avenue','Shaw Boulevard']],['Quezon City','Metro Manila','1100',['Quezon Avenue','Aurora Boulevard','Timog Avenue','Tomas Morato','Katipunan Avenue']],['Davao City','Davao del Sur','8000',['Rizal Street','Bonifacio Street','Sales Street','C.M. Recto Street','San Pedro Street']],['Cebu City','Cebu','6000',['Colon Street','Osmeña Boulevard','Jones Avenue','Fuente Osmeña','Mango Avenue']],['Baguio','Benguet','2600',['Session Road','Harrison Road','Kennon Road','Marcos Highway','Naguilian Road']]]},
+'VN':{n:'Vietnam',f:'🇻🇳',c:'VND',p:'+84',ci:[['Ho Chi Minh City','Ho Chi Minh','700',['Nguyen Hue Street','Dong Khoi Street','Le Loi Street','Le Thanh Ton Street','Hai Ba Trung Street']],['Hanoi','Hanoi','100',['Trang Tien Street','Hang Bai Street','Hang Dao Street','Hang Gai Street','Ma May Street']],['Da Nang','Da Nang','500',['Bach Dang Street','Nguyen Van Linh Street','Le Duan Street','Tran Phu Street','Nguyen Chi Thanh Street']],['Can Tho','Can Tho','900',['Hai Ba Trung Street','Nguyen Trai Street','Hoa Binh Avenue','Tran Hung Dao Street','Phan Dinh Phung Street']],['Hue','Thua Thien Hue','490',['Hung Vuong Street','Le Loi Street','Nguyen Hue Street','Tran Hung Dao Street','Pham Ngu Lao Street']]]},
+'KR':{n:'South Korea',f:'🇰🇷',c:'KRW',p:'+82',ci:[['Seoul','Seoul','045',['Gangnam-daero','Teheran-ro','Myeongdong-gil','Jongno','Euljiro']],['Busan','Busan','480',['Haeundae Beach Road','Gwangalli Beach Road','Seomyeon-ro','Jungang-daero','Taejong-daero']],['Incheon','Incheon','223',['Incheon Tower-daero','Songdo-dong','Bupyeong-daero','Gyeongin-ro','Wolmido-ro']],['Daegu','Daegu','419',['Dongseong-ro','Jungang-daero','Dalgu-bul-ro','Myeongdeok-ro','Suseong-ro']],['Daejeon','Daejeon','341',['Dunsan-daero','Gyerong-ro','Jungang-ro','Daejeon-ro','Hanbat-daero']]]},
+'CN':{n:'China',f:'🇨🇳',c:'CNY',p:'+86',ci:[['Beijing','Beijing','100',['Chang\'an Avenue','Wangfujing Street','Qianmen Street','Nanluoguxiang','Sanlitun Road']],['Shanghai','Shanghai','200',['Nanjing Road','Huaihai Road','Zhongshan Road','Xizang Road','Sichuan Road']],['Guangzhou','Guangdong','510',['Beijing Road','Zhongshan Road','Shangxiajiu Road','Tianhe Road','Huanshi Road']],['Shenzhen','Guangdong','518',['Shennan Avenue','Binhai Avenue','Fuhua Road','Huaqiang North Road','Dongmen Road']],['Chengdu','Sichuan','610',['Chunxi Road','Taikoo Li','Kuanzhai Alley','Jinli Street','Wuhouci Street']]]},
+'IN':{n:'India',f:'🇮🇳',c:'INR',p:'+91',ci:[['Mumbai','Maharashtra','400',['Marine Drive','Colaba Causeway','Linking Road','Carter Road','Hill Road']],['Delhi','Delhi','110',['Connaught Place','Chandni Chowk','Rajpath','Karol Bagh','Lajpat Nagar']],['Bangalore','Karnataka','560',['MG Road','Brigade Road','Church Street','Commercial Street','Koramangala']],['Hyderabad','Telangana','500',['Charminar Road','Banjara Hills','Jubilee Hills','Hitec City','Gachibowli']],['Chennai','Tamil Nadu','600',['Anna Salai','Marina Beach Road','T Nagar','Nungambakkam','Adyar']]]},
+'BR':{n:'Brazil',f:'🇧🇷',c:'BRL',p:'+55',ci:[['São Paulo','São Paulo','010',['Avenida Paulista','Rua Augusta','Avenida Faria Lima','Rua Oscar Freire','Rua da Consolação']],['Rio de Janeiro','Rio de Janeiro','200',['Avenida Atlântica','Avenida Copacabana','Rua Farme de Amoedo','Avenida Vieira Souto','Rua Visconde de Pirajá']],['Brasília','Distrito Federal','700',['Eixo Monumental','Esplanada dos Ministérios','Avenida W3','Avenida L2 Sul','Avenida das Nações']],['Salvador','Bahia','400',['Avenida Sete de Setembro','Rua Chile','Pelourinho','Avenida Oceânica','Avenida Tancredo Neves']],['Recife','Pernambuco','500',['Avenida Boa Viagem','Rua da Aurora','Avenida Conde da Boa Vista','Rua do Bom Jesus','Avenida Guararapes']]]},
+'RU':{n:'Russia',f:'🇷🇺',c:'RUB',p:'+7',ci:[['Moscow','Moscow','101',['Tverskaya Street','Arbat Street','Nevsky Prospekt','Red Square','Lubyanka Square']],['Saint Petersburg','Saint Petersburg','190',['Nevsky Prospekt','Palace Square','Liteyny Prospekt','Sadovaya Street','Griboyedov Canal']],['Novosibirsk','Novosibirsk','630',['Krasny Prospekt','Lenina Street','Karla Marksa Avenue','Sovetskaya Street','Gogolya Street']],['Yekaterinburg','Sverdlovsk','620',['Lenina Avenue','Mira Street','Malysheva Street','Lutskaya Street','Kuybysheva Street']],['Kazan','Tatarstan','420',['Bauman Street','Kremlyovskaya Street','Peterburgskaya Street','Pushkina Street','Dostoevskogo Street']]]},
+'ZA':{n:'South Africa',f:'🇿🇦',c:'ZAR',p:'+27',ci:[['Johannesburg','Gauteng','200',['Eloff Street','Commissioner Street','Jeppe Street','Bree Street','Pritchard Street']],['Cape Town','Western Cape','800',['Long Street','Adderley Street','Strand Street','Bree Street','Kloof Street']],['Durban','KwaZulu-Natal','400',['Florida Road','West Street','Smith Street','Albert Street','Victoria Street']],['Pretoria','Gauteng','000',['Church Street','Paul Kruger Street','Schoeman Street','Pretorius Street','Stanley Street']],['Bloemfontein','Free State','930',['Church Street','Nelson Mandela Drive','Maitland Street','Union Avenue','Zastron Street']]]},
+'NL':{n:'Netherlands',f:'🇳🇱',c:'EUR',p:'+31',ci:[['Amsterdam','North Holland','1011',['Damrak','Kalverstraat','Leidsestraat','Rokin','Prinsengracht']],['Rotterdam','South Holland','3011',['Coolsingel','Lijnbaan','Meent','Beursplein','Westblaak']],['The Hague','South Holland','2511',['Spui','Grote Marktstraat','Plein','Lange Voorhout','Kneuterdijk']],['Utrecht','Utrecht','3511',['Oudegracht','Neude','Lange Viestraat','Vredenburg','Steenweg']],['Eindhoven','North Brabant','5611',['Stratumseind','Rechtestraat','Demer','Vestdijk','Kleine Berg']]]},
+'BE':{n:'Belgium',f:'🇧🇪',c:'EUR',p:'+32',ci:[['Brussels','Brussels','1000',['Rue Neuve','Avenue Louise','Rue de la Loi','Boulevard Anspach','Grand Place']],['Antwerp','Flanders','2000',['Meir','Groenplaats','Nationalestraat','Kammenstraat','Hoogstraat']],['Ghent','Flanders','9000',['Veldstraat','Korenmarkt','Korenlei','Graslei','Langemunt']],['Bruges','Flanders','8000',['Markt','Burg','Steenstraat','Zuidzandstraat','Noordzandstraat']],['Leuven','Flanders','3000',['Bondgenotenlaan','Diestsestraat','Mechelsestraat','Naamsestraat','Brusselsestraat']]]},
+'MX':{n:'Mexico',f:'🇲🇽',c:'MXN',p:'+52',ci:[['Mexico City','Mexico City','060',['Paseo de la Reforma','Avenida Insurgentes','Avenida Juárez','Calle Madero','Avenida Chapultepec']],['Guadalajara','Jalisco','441',['Avenida Chapultepec','Avenida Juárez','Avenida Vallarta','Avenida López Mateos','Calle Morelos']],['Monterrey','Nuevo León','640',['Avenida Constitución','Avenida Madero','Avenida Padre Mier','Avenida Morelos','Avenida Zaragoza']],['Puebla','Puebla','720',['Avenida Juárez','Boulevard Héroes del 5 de Mayo','Avenida Reforma','Calle 16 de Septiembre','Avenida Zaragoza']],['Tijuana','Baja California','220',['Avenida Revolución','Boulevard Agua Caliente','Paseo de los Héroes','Avenida Constitución','Boulevard Sánchez Taboada']]]},
+'AR':{n:'Argentina',f:'🇦🇷',c:'ARS',p:'+54',ci:[['Buenos Aires','Buenos Aires','1000',['Avenida 9 de Julio','Avenida Corrientes','Avenida Santa Fe','Avenida Callao','Avenida Rivadavia']],['Córdoba','Córdoba','5000',['Avenida Colón','Avenida San Martín','Avenida Vélez Sarsfield','Avenida General Paz','Boulevard Chacabuco']],['Rosario','Santa Fe','2000',['Córdoba','Avenida Pellegrini','Boulevard Oroño','Avenida Rivadavia','Calle San Luis']],['Mendoza','Mendoza','5500',['Avenida San Martín','Avenida Las Heras','Avenida Colón','Calle Sarmiento','Calle Mitre']],['Salta','Salta','4400',['Avenida San Martín','Calle Mitre','Calle Caseros','Avenida Belgrano','Calle Zuviría']]]}
+};
 
-const COUNTRY_DATA = {
-    'US': {
-        name: 'United States', flag: '🇺🇸', currency: 'USD', phoneCode: '+1',
-        cities: [
-            { city: 'New York', state: 'New York', postalPrefix: '100', streets: ['Broadway', '5th Avenue', 'Madison Avenue', 'Wall Street', 'Park Avenue', 'Lexington Avenue', 'Amsterdam Avenue', 'Columbus Avenue', 'Riverside Drive', 'Central Park West'] },
-            { city: 'Los Angeles', state: 'California', postalPrefix: '900', streets: ['Hollywood Boulevard', 'Sunset Boulevard', 'Rodeo Drive', 'Wilshire Boulevard', 'Melrose Avenue', 'Vine Street', 'Highland Avenue', 'Fairfax Avenue', 'La Brea Avenue', 'Crenshaw Boulevard'] },
-            { city: 'Chicago', state: 'Illinois', postalPrefix: '606', streets: ['Michigan Avenue', 'State Street', 'Clark Street', 'Halsted Street', 'Ashland Avenue', 'Western Avenue', 'Fullerton Avenue', 'Belmont Avenue', 'Division Street', 'North Avenue'] },
-            { city: 'Houston', state: 'Texas', postalPrefix: '770', streets: ['Main Street', 'Westheimer Road', 'Richmond Avenue', 'Kirby Drive', 'Shepherd Drive', 'Montrose Boulevard', 'Bellaire Boulevard', 'Fannin Street', 'Travis Street', 'Milam Street'] },
-            { city: 'Phoenix', state: 'Arizona', postalPrefix: '850', streets: ['Central Avenue', 'Camelback Road', 'Indian School Road', 'Thomas Road', 'McDowell Road', 'Van Buren Street', 'Washington Street', 'Jefferson Street', 'Glendale Avenue', 'Northern Avenue'] },
-            { city: 'Philadelphia', state: 'Pennsylvania', postalPrefix: '191', streets: ['Market Street', 'Broad Street', 'Chestnut Street', 'Walnut Street', 'Locust Street', 'Spruce Street', 'Pine Street', 'South Street', 'Race Street', 'Arch Street'] },
-            { city: 'San Antonio', state: 'Texas', postalPrefix: '782', streets: ['Alamo Plaza', 'Houston Street', 'Commerce Street', 'Market Street', 'Broadway', 'St. Mary\'s Street', 'Navarro Street', 'Losoya Street', 'Presa Street', 'Flores Street'] },
-            { city: 'San Diego', state: 'California', postalPrefix: '921', streets: ['Broadway', 'Harbor Drive', 'Pacific Highway', 'India Street', 'Garnet Avenue', 'Mission Boulevard', 'El Cajon Boulevard', 'University Avenue', 'Adams Avenue', 'La Jolla Boulevard'] },
-            { city: 'Dallas', state: 'Texas', postalPrefix: '752', streets: ['Main Street', 'Elm Street', 'Commerce Street', 'Ross Avenue', 'McKinney Avenue', 'Greenville Avenue', 'Mockingbird Lane', 'Lovers Lane', 'Northwest Highway', 'Preston Road'] },
-            { city: 'San Jose', state: 'California', postalPrefix: '951', streets: ['First Street', 'Santa Clara Street', 'Alameda Boulevard', 'The Alameda', 'Meridian Avenue', 'Bascom Avenue', 'Winchester Boulevard', 'Stevens Creek Boulevard', 'El Camino Real', 'Blossom Hill Road'] }
-        ]
-    },
-    'UK': {
-        name: 'United Kingdom', flag: '🇬🇧', currency: 'GBP', phoneCode: '+44',
-        cities: [
-            { city: 'London', state: 'England', postalPrefix: 'SW1A', streets: ['Oxford Street', 'Regent Street', 'Bond Street', 'Baker Street', 'Abbey Road', 'Downing Street', 'Piccadilly', 'Fleet Street', 'Strand', 'King\'s Road'] },
-            { city: 'Birmingham', state: 'England', postalPrefix: 'B1', streets: ['New Street', 'Corporation Street', 'Bull Street', 'High Street', 'Broad Street', 'Colmore Row', 'Paradise Street', 'Hill Street', 'Priory Queensway', 'Moor Street'] },
-            { city: 'Manchester', state: 'England', postalPrefix: 'M1', streets: ['Deansgate', 'Oxford Road', 'Market Street', 'King Street', 'Piccadilly', 'Portland Street', 'Princess Street', 'Mosley Street', 'John Dalton Street', 'Whitworth Street'] },
-            { city: 'Glasgow', state: 'Scotland', postalPrefix: 'G1', streets: ['Buchanan Street', 'Argyle Street', 'Sauchiehall Street', 'Hope Street', 'Renfield Street', 'Jamaica Street', 'Union Street', 'Queen Street', 'Ingram Street', 'George Square'] },
-            { city: 'Liverpool', state: 'England', postalPrefix: 'L1', streets: ['Bold Street', 'Church Street', 'Lord Street', 'Castle Street', 'Dale Street', 'James Street', 'Victoria Street', 'Renshaw Street', 'Ranelagh Street', 'Hanover Street'] },
-            { city: 'Bristol', state: 'England', postalPrefix: 'BS1', streets: ['Park Street', 'Clifton Down', 'Whiteladies Road', 'Gloucester Road', 'Baldwin Street', 'Corn Street', 'Broad Street', 'Queen Square', 'King Street', 'Welsh Back'] },
-            { city: 'Sheffield', state: 'England', postalPrefix: 'S1', streets: ['Fargate', 'The Moor', 'Pinstone Street', 'Division Street', 'West Street', 'Devonshire Street', 'Ecclesall Road', 'London Road', 'Glossop Road', 'Sharrow Vale Road'] },
-            { city: 'Leeds', state: 'England', postalPrefix: 'LS1', streets: ['Briggate', 'Headrow', 'Boar Lane', 'Vicar Lane', 'Kirkgate', 'Call Lane', 'Millennium Square', 'Park Row', 'Wellington Street', 'Albion Street'] },
-            { city: 'Edinburgh', state: 'Scotland', postalPrefix: 'EH1', streets: ['Royal Mile', 'Princes Street', 'George Street', 'Rose Street', 'Queen Street', 'Victoria Street', 'Grassmarket', 'Cowgate', 'Canongate', 'Leith Walk'] },
-            { city: 'Leicester', state: 'England', postalPrefix: 'LE1', streets: ['Belgrave Road', 'Granby Street', 'Market Street', 'High Street', 'Gallowtree Gate', 'Church Gate', 'St. Martin\'s', 'Humberstone Gate', 'London Road', 'Welford Road'] }
-        ]
-    },
-    'CA': {
-        name: 'Canada', flag: '🇨🇦', currency: 'CAD', phoneCode: '+1',
-        cities: [
-            { city: 'Toronto', state: 'Ontario', postalPrefix: 'M5H', streets: ['Yonge Street', 'Queen Street West', 'King Street West', 'Bloor Street', 'Dundas Street', 'College Street', 'Spadina Avenue', 'Bay Street', 'Front Street', 'University Avenue'] },
-            { city: 'Montreal', state: 'Quebec', postalPrefix: 'H3Z', streets: ['Rue Sainte-Catherine', 'Boulevard Saint-Laurent', 'Rue Sherbrooke', 'Avenue du Mont-Royal', 'Rue Saint-Denis', 'Boulevard René-Lévesque', 'Rue Peel', 'Rue Crescent', 'Rue Notre-Dame', 'Boulevard De Maisonneuve'] },
-            { city: 'Vancouver', state: 'British Columbia', postalPrefix: 'V6B', streets: ['Robson Street', 'Granville Street', 'Burrard Street', 'Georgia Street', 'Davie Street', 'Denman Street', 'Hastings Street', 'Broadway', 'Main Street', 'Cambie Street'] },
-            { city: 'Calgary', state: 'Alberta', postalPrefix: 'T2P', streets: ['Stephen Avenue', '8th Avenue SW', '17th Avenue SW', '4th Street SW', 'Macleod Trail', 'Centre Street', 'Edmonton Trail', 'Crowchild Trail', 'Deerfoot Trail', 'Glenmore Trail'] },
-            { city: 'Edmonton', state: 'Alberta', postalPrefix: 'T5J', streets: ['Jasper Avenue', 'Whyte Avenue', '104th Street', '124th Street', 'Stony Plain Road', 'Kingsway', 'Calgary Trail', 'Gateway Boulevard', 'Capilano Drive', 'Terwillegar Drive'] },
-            { city: 'Ottawa', state: 'Ontario', postalPrefix: 'K1P', streets: ['Bank Street', 'Rideau Street', 'Elgin Street', 'Sparks Street', 'Wellington Street', 'Preston Street', 'Somerset Street', 'Richmond Road', 'Carling Avenue', 'Merivale Road'] },
-            { city: 'Winnipeg', state: 'Manitoba', postalPrefix: 'R3C', streets: ['Portage Avenue', 'Main Street', 'Broadway', 'Corydon Avenue', 'Osborne Street', 'Academy Road', 'Grant Avenue', 'Pembina Highway', 'St. Mary\'s Road', 'Regent Avenue'] },
-            { city: 'Quebec City', state: 'Quebec', postalPrefix: 'G1R', streets: ['Rue Saint-Jean', 'Rue Sainte-Anne', 'Grande Allée', 'Boulevard René-Lévesque', 'Rue Cartier', 'Avenue Cartier', 'Rue Saint-Louis', 'Rue d\'Auteuil', 'Boulevard Laurier', 'Rue Saint-Paul'] },
-            { city: 'Hamilton', state: 'Ontario', postalPrefix: 'L8P', streets: ['King Street West', 'Main Street West', 'James Street North', 'Barton Street', 'Ottawa Street', 'Concession Street', 'Upper James Street', 'Mohawk Road', 'Fennell Avenue', 'Rymal Road'] },
-            { city: 'Halifax', state: 'Nova Scotia', postalPrefix: 'B3J', streets: ['Barrington Street', 'Spring Garden Road', 'Quinpool Road', 'Robie Street', 'Gottingen Street', 'Agricola Street', 'Dresden Row', 'Blowers Street', 'Argyle Street', 'Sackville Street'] }
-        ]
-    },
-    'AU': {
-        name: 'Australia', flag: '🇦🇺', currency: 'AUD', phoneCode: '+61',
-        cities: [
-            { city: 'Sydney', state: 'New South Wales', postalPrefix: '2000', streets: ['George Street', 'Pitt Street', 'Oxford Street', 'King Street', 'Elizabeth Street', 'Castlereagh Street', 'Macquarie Street', 'York Street', 'Kent Street', 'Sussex Street'] },
-            { city: 'Melbourne', state: 'Victoria', postalPrefix: '3000', streets: ['Bourke Street', 'Collins Street', 'Flinders Street', 'Swanston Street', 'Elizabeth Street', 'Chapel Street', 'Toorak Road', 'Lygon Street', 'Brunswick Street', 'Smith Street'] },
-            { city: 'Brisbane', state: 'Queensland', postalPrefix: '4000', streets: ['Queen Street', 'Adelaide Street', 'George Street', 'Edward Street', 'Ann Street', 'Eagle Street', 'Creek Street', 'Wharf Street', 'Charlotte Street', 'Mary Street'] },
-            { city: 'Perth', state: 'Western Australia', postalPrefix: '6000', streets: ['St Georges Terrace', 'Hay Street', 'Murray Street', 'Wellington Street', 'Barrack Street', 'William Street', 'Beaufort Street', 'Scarborough Beach Road', 'Albany Highway', 'Canning Highway'] },
-            { city: 'Adelaide', state: 'South Australia', postalPrefix: '5000', streets: ['Rundle Mall', 'King William Street', 'North Terrace', 'Hindley Street', 'Grenfell Street', 'Currie Street', 'Waymouth Street', 'Grote Street', 'Wakefield Street', 'Flinders Street'] },
-            { city: 'Gold Coast', state: 'Queensland', postalPrefix: '4217', streets: ['Surfers Paradise Boulevard', 'Cavill Avenue', 'Orchid Avenue', 'Elkhorn Avenue', 'Beach Road', 'Ferry Road', 'Bundall Road', 'Gold Coast Highway', 'Ocean Avenue', 'Staghorn Avenue'] },
-            { city: 'Canberra', state: 'Australian Capital Territory', postalPrefix: '2600', streets: ['Northbourne Avenue', 'Commonwealth Avenue', 'Kings Avenue', 'Parkes Way', 'Constitution Avenue', 'London Circuit', 'Barry Drive', 'Belconnen Way', 'Gungahlin Drive', 'Tuggeranong Parkway'] },
-            { city: 'Newcastle', state: 'New South Wales', postalPrefix: '2300', streets: ['Hunter Street', 'King Street', 'Darby Street', 'Beaumont Street', 'Glebe Road', 'Parry Street', 'Wickham Street', 'Honeysuckle Drive', 'Wharf Road', 'Pacific Highway'] },
-            { city: 'Wollongong', state: 'New South Wales', postalPrefix: '2500', streets: ['Crown Street', 'Keira Street', 'Market Street', 'Burelli Street', 'Corrimal Street', 'Gipps Street', 'Church Street', 'Flinders Street', 'Kembla Street', 'Smith Street'] },
-            { city: 'Geelong', state: 'Victoria', postalPrefix: '3220', streets: ['Moorabool Street', 'Malop Street', 'Little Malop Street', 'Ryrie Street', 'Yarra Street', 'Pakington Street', 'Shannon Avenue', 'Bellarine Highway', 'Barwon Heads Road', 'Torquay Road'] }
-        ]
-    },
-    'DE': {
-        name: 'Germany', flag: '🇩🇪', currency: 'EUR', phoneCode: '+49',
-        cities: [
-            { city: 'Berlin', state: 'Berlin', postalPrefix: '101', streets: ['Unter den Linden', 'Kurfürstendamm', 'Friedrichstraße', 'Alexanderplatz', 'Potsdamer Platz', 'Kastanienallee', 'Schönhauser Allee', 'Karl-Marx-Allee', 'Torstraße', 'Oranienstraße'] },
-            { city: 'Hamburg', state: 'Hamburg', postalPrefix: '200', streets: ['Mönckebergstraße', 'Jungfernstieg', 'Reeperbahn', 'Schanzenstraße', 'Speicherstadt', 'Landungsbrücken', 'Große Freiheit', 'Neuer Wall', 'Ballindamm', 'Alsterufer'] },
-            { city: 'Munich', state: 'Bavaria', postalPrefix: '803', streets: ['Marienplatz', 'Leopoldstraße', 'Maximilianstraße', 'Kaufingerstraße', 'Sendlinger Straße', 'Ludwigstraße', 'Brienner Straße', 'Theatinerstraße', 'Viktualienmarkt', 'Schwabing'] },
-            { city: 'Cologne', state: 'North Rhine-Westphalia', postalPrefix: '506', streets: ['Hohe Straße', 'Schildergasse', 'Ehrenstraße', 'Breite Straße', 'Neumarkt', 'Rudolfplatz', 'Severinstraße', 'Aachener Straße', 'Venloer Straße', 'Subbelrather Straße'] },
-            { city: 'Frankfurt', state: 'Hesse', postalPrefix: '603', streets: ['Zeil', 'Goethestraße', 'Kaiserstraße', 'Mainzer Landstraße', 'Berger Straße', 'Schweizer Straße', 'Hanauer Landstraße', 'Leipziger Straße', 'Friedberger Landstraße', 'Eschersheimer Landstraße'] },
-            { city: 'Stuttgart', state: 'Baden-Württemberg', postalPrefix: '701', streets: ['Königstraße', 'Schlossstraße', 'Theodor-Heuss-Straße', 'Calwer Straße', 'Marienstraße', 'Eberhardstraße', 'Rotebühlstraße', 'Hauptstätter Straße', 'Olgastraße', 'Charlottenplatz'] },
-            { city: 'Düsseldorf', state: 'North Rhine-Westphalia', postalPrefix: '402', streets: ['Königsallee', 'Schadowstraße', 'Rheinstraße', 'Berliner Allee', 'Graf-Adolf-Straße', 'Worringer Straße', 'Nordstraße', 'Bilker Allee', 'Fürstenwall', 'Carlstadt'] },
-            { city: 'Dortmund', state: 'North Rhine-Westphalia', postalPrefix: '441', streets: ['Westenhellweg', 'Hansastraße', 'Kampstraße', 'Rheinische Straße', 'Hohe Straße', 'Ostenhellweg', 'Kleppingstraße', 'Brückstraße', 'Wiener Straße', 'Bornstraße'] },
-            { city: 'Essen', state: 'North Rhine-Westphalia', postalPrefix: '451', streets: ['Kettwiger Straße', 'Limbecker Straße', 'Rüttenscheider Straße', 'Huyssenallee', 'Bismarckstraße', 'Alfredstraße', 'Kennedyplatz', 'Viehofer Straße', 'Steeler Straße', 'Gladbecker Straße'] },
-            { city: 'Leipzig', state: 'Saxony', postalPrefix: '041', streets: ['Grimmaische Straße', 'Petersstraße', 'Katharinenstraße', 'Hainstraße', 'Markt', 'Barfußgäßchen', 'Klostergasse', 'Nikolaistraße', 'Reichsstraße', 'Zschochersche Straße'] }
-        ]
-    },
-    'FR': {
-        name: 'France', flag: '🇫🇷', currency: 'EUR', phoneCode: '+33',
-        cities: [
-            { city: 'Paris', state: 'Île-de-France', postalPrefix: '750', streets: ['Champs-Élysées', 'Rue de Rivoli', 'Boulevard Saint-Germain', 'Rue de la Paix', 'Avenue Montaigne', 'Rue du Faubourg Saint-Honoré', 'Boulevard Haussmann', 'Rue de Rennes', 'Avenue des Champs-Élysées', 'Rue Saint-Antoine'] },
-            { city: 'Marseille', state: 'Provence-Alpes-Côte d\'Azur', postalPrefix: '130', streets: ['La Canebière', 'Rue Saint-Ferréol', 'Cours Julien', 'Rue Paradis', 'Avenue du Prado', 'Boulevard Longchamp', 'Rue de la République', 'Quai du Port', 'Rue Sainte', 'Boulevard Baille'] },
-            { city: 'Lyon', state: 'Auvergne-Rhône-Alpes', postalPrefix: '690', streets: ['Rue de la République', 'Rue Victor Hugo', 'Cours Vitton', 'Avenue Jean Jaurès', 'Rue Garibaldi', 'Boulevard de la Croix-Rousse', 'Rue du Président Édouard Herriot', 'Place Bellecour', 'Rue Saint-Jean', 'Quai Saint-Antoine'] },
-            { city: 'Toulouse', state: 'Occitanie', postalPrefix: '310', streets: ['Rue d\'Alsace-Lorraine', 'Rue Saint-Rome', 'Rue du Taur', 'Allées Jean Jaurès', 'Boulevard de Strasbourg', 'Avenue de la Gloire', 'Rue Bayard', 'Place du Capitole', 'Rue de Metz', 'Boulevard Lazare Carnot'] },
-            { city: 'Nice', state: 'Provence-Alpes-Côte d\'Azur', postalPrefix: '060', streets: ['Promenade des Anglais', 'Avenue Jean Médecin', 'Rue Masséna', 'Boulevard Victor Hugo', 'Rue de la Préfecture', 'Cours Saleya', 'Avenue de la Californie', 'Boulevard Gambetta', 'Rue Pastorelli', 'Quai des États-Unis'] },
-            { city: 'Nantes', state: 'Pays de la Loire', postalPrefix: '440', streets: ['Rue Crébillon', 'Rue de la Marne', 'Boulevard de la Liberté', 'Cours des 50 Otages', 'Rue du Calvaire', 'Rue des Carmes', 'Place Royale', 'Rue Haute Casserie', 'Boulevard Gabriel Guist\'hau', 'Quai de la Fosse'] },
-            { city: 'Strasbourg', state: 'Grand Est', postalPrefix: '670', streets: ['Rue des Grandes Arcades', 'Rue du Vieux Marché aux Poissons', 'Rue des Hallebardes', 'Avenue de la Paix', 'Rue Kageneck', 'Place Kléber', 'Rue du 22 Novembre', 'Rue de la Mésange', 'Boulevard de la Victoire', 'Quai des Pêcheurs'] },
-            { city: 'Montpellier', state: 'Occitanie', postalPrefix: '340', streets: ['Rue de la Loge', 'Rue Foch', 'Place de la Comédie', 'Avenue de la Justice', 'Rue du Bras de Fer', 'Boulevard du Jeu de Paume', 'Rue Saint-Guilhem', 'Avenue des États du Languedoc', 'Rue de l\'Aiguillerie', 'Boulevard Henri IV'] },
-            { city: 'Bordeaux', state: 'Nouvelle-Aquitaine', postalPrefix: '330', streets: ['Rue Sainte-Catherine', 'Cours de l\'Intendance', 'Rue des Remparts', 'Cours Victor Hugo', 'Rue Notre-Dame', 'Place de la Bourse', 'Quai des Chartrons', 'Rue Fondaudège', 'Boulevard Gambetta', 'Cours Pasteur'] },
-            { city: 'Lille', state: 'Hauts-de-France', postalPrefix: '590', streets: ['Rue Faidherbe', 'Rue Nationale', 'Boulevard de la Liberté', 'Rue Gambetta', 'Rue Esquermoise', 'Grand Place', 'Rue de Béthune', 'Rue des Sarrazins', 'Boulevard Victor Hugo', 'Rue du Molinel'] }
-        ]
-    },
-    'JP': {
-        name: 'Japan', flag: '🇯🇵', currency: 'JPY', phoneCode: '+81',
-        cities: [
-            { city: 'Tokyo', state: 'Tokyo', postalPrefix: '100', streets: ['Chiyoda', 'Ginza', 'Shibuya', 'Shinjuku', 'Roppongi', 'Akihabara', 'Asakusa', 'Harajuku', 'Ikebukuro', 'Ueno'] },
-            { city: 'Yokohama', state: 'Kanagawa', postalPrefix: '220', streets: ['Minato Mirai', 'Kannai', 'Noge', 'Isezakicho', 'Motomachi', 'Yamashitacho', 'Sakuragicho', 'Bashamichi', 'Hinodecho', 'Tobe'] },
-            { city: 'Osaka', state: 'Osaka', postalPrefix: '530', streets: ['Umeda', 'Namba', 'Shinsaibashi', 'Dotonbori', 'Tennoji', 'Shinsekai', 'Kyobashi', 'Tanimachi', 'Hommachi', 'Yodoyabashi'] },
-            { city: 'Nagoya', state: 'Aichi', postalPrefix: '450', streets: ['Sakae', 'Nagoya Station', 'Osu', 'Kanayama', 'Yabacho', 'Fushimi', 'Marunouchi', 'Hisaya Odori', 'Meieki', 'Imaike'] },
-            { city: 'Sapporo', state: 'Hokkaido', postalPrefix: '060', streets: ['Susukino', 'Odori', 'Sapporo Station', 'Nakajima Park', 'Maruyama', 'Moiwa', 'Teine', 'Kotoni', 'Atsubetsu', 'Shiroishi'] },
-            { city: 'Fukuoka', state: 'Fukuoka', postalPrefix: '810', streets: ['Tenjin', 'Hakata', 'Nakasu', 'Ohori', 'Yakuin', 'Daimyo', 'Kego', 'Imaizumi', 'Watanabe-dori', 'Nishijin'] },
-            { city: 'Kobe', state: 'Hyogo', postalPrefix: '650', streets: ['Sannomiya', 'Motomachi', 'Kitano', 'Harborland', 'Rokko', 'Port Island', 'Nada', 'Higashinada', 'Chuo', 'Kita'] },
-            { city: 'Kyoto', state: 'Kyoto', postalPrefix: '600', streets: ['Shijo', 'Kawaramachi', 'Gion', 'Kiyomizu', 'Arashiyama', 'Fushimi', 'Nishiki', 'Pontocho', 'Karasuma', 'Sanjo'] },
-            { city: 'Kawasaki', state: 'Kanagawa', postalPrefix: '210', streets: ['Kawasaki Station', 'Musashi-Kosugi', 'Noborito', 'Shin-Maruko', 'Mizonokuchi', 'Saginuma', 'Tama-Plaza', 'Azamino', 'Nakahara', 'Takatsu'] },
-            { city: 'Saitama', state: 'Saitama', postalPrefix: '330', streets: ['Omiya', 'Urawa', 'Kawagoe', 'Kawaguchi', 'Tokorozawa', 'Koshigaya', 'Soka', 'Asaka', 'Wako', 'Toda'] }
-        ]
-    },
-    'MM': {
-        name: 'Myanmar', flag: '🇲🇲', currency: 'MMK', phoneCode: '+95',
-        cities: [
-            { city: 'Yangon', state: 'Yangon Region', postalPrefix: '111', streets: ['Sule Pagoda Road', 'Maha Bandula Road', 'Anawrahta Road', 'Bogyoke Aung San Road', 'Kabar Aye Pagoda Road', 'Pyay Road', 'University Avenue', 'Inya Road', 'Strand Road', 'Merchant Road'] },
-            { city: 'Mandalay', state: 'Mandalay Region', postalPrefix: '050', streets: ['Zegyo Market', '84th Street', '26th Street', '78th Street', '35th Street', 'Mandalay Palace', 'U Bein Bridge', 'Mandalay Hill', 'Shwenandaw', 'Kuthodaw'] },
-            { city: 'Naypyidaw', state: 'Naypyidaw Union Territory', postalPrefix: '150', streets: ['Yaza Htarni Road', 'Naypyidaw Taw Win', 'Zabuthiri', 'Ottarathiri', 'Dekkhinathiri', 'Pobbathiri', 'Tatkon', 'Lewe', 'Pyinmana', 'Thar Si'] },
-            { city: 'Mawlamyine', state: 'Mon State', postalPrefix: '120', streets: ['Strand Road', 'Lower Main Road', 'Upper Main Road', 'Bogyoke Road', 'Thaton Road', 'Moulmein Market', 'Kyaikthanlan Pagoda', 'Ngwe Moe', 'Zwekapin', 'Mudon Road'] },
-            { city: 'Bago', state: 'Bago Region', postalPrefix: '080', streets: ['Bogyoke Road', 'Shwe Maw Daw Road', 'Kyaik Pun', 'Hintha Gone', 'Maha Kalyani', 'Zaytawun', 'Kyauk Tan', 'Waw', 'Thanatpin', 'Kawa'] },
-            { city: 'Pathein', state: 'Ayeyarwady Region', postalPrefix: '100', streets: ['Myaung Mya Road', 'Bogyoke Road', 'Strand Road', 'Shwemokhtaw Pagoda', 'Pathein Market', 'Kangyidaunt', 'Ngapudaw', 'Thabaung', 'Kyaunggon', 'Einme'] },
-            { city: 'Myitkyina', state: 'Kachin State', postalPrefix: '010', streets: ['Zaydan Road', 'Aung Mingalar', 'Manhkrin', 'Sut Ngai Naw', 'Dukhtawng', 'Malikha', 'Waingmaw', 'Mogaung', 'Chipwi', 'Putao'] },
-            { city: 'Taunggyi', state: 'Shan State', postalPrefix: '060', streets: ['Bogyoke Road', 'Zay Tan', 'Kandawgyi', 'Shwe Nyaung', 'Aye Thar Yar', 'Nyaung Shwe', 'Kalaw', 'Pindaya', 'Ywar Ngan', 'Hopong'] },
-            { city: 'Sittwe', state: 'Rakhine State', postalPrefix: '070', streets: ['Strand Road', 'Main Road', 'Bogyoke Road', 'Sittwe Market', 'View Point', 'Ponnagyun', 'Rathedaung', 'Kyaukpyu', 'Mrauk U', 'Thandwe'] },
-            { city: 'Meiktila', state: 'Mandalay Region', postalPrefix: '051', streets: ['Bogyoke Road', 'Myoma Market', 'Kandawgyi', 'Meiktila Lake', 'Wundwin', 'Mahlaing', 'Thazi', 'Yamethin', 'Pyawbwe', 'Tatkon'] }
-        ]
-    },
-    'TH': {
-        name: 'Thailand', flag: '🇹🇭', currency: 'THB', phoneCode: '+66',
-        cities: [
-            { city: 'Bangkok', state: 'Bangkok', postalPrefix: '101', streets: ['Sukhumvit Road', 'Silom Road', 'Sathorn Road', 'Khao San Road', 'Rama I Road', 'Ploenchit Road', 'Wireless Road', 'Ratchadamri Road', 'Rama IV Road', 'Asok Road'] },
-            { city: 'Chiang Mai', state: 'Chiang Mai', postalPrefix: '500', streets: ['Nimmanhaemin Road', 'Tha Phae Road', 'Ratchadamnoen Road', 'Moon Muang Road', 'Chang Klan Road', 'Huay Kaew Road', 'Super Highway', 'Canal Road', 'Loi Kroh Road', 'Wualai Road'] },
-            { city: 'Phuket', state: 'Phuket', postalPrefix: '830', streets: ['Bangla Road', 'Rat-U-Thit 200 Pi Road', 'Thaweewong Road', 'Phuket Road', 'Chalong Road', 'Thepkrassattri Road', 'Sirirat Road', 'Kata Road', 'Karon Road', 'Patong Beach Road'] },
-            { city: 'Pattaya', state: 'Chonburi', postalPrefix: '201', streets: ['Beach Road', 'Walking Street', 'Second Road', 'Third Road', 'Sukhumvit Road', 'Pratamnak Road', 'Jomtien Beach Road', 'Thepprasit Road', 'South Pattaya Road', 'North Pattaya Road'] },
-            { city: 'Hat Yai', state: 'Songkhla', postalPrefix: '901', streets: ['Niphat Uthit 1 Road', 'Niphat Uthit 2 Road', 'Niphat Uthit 3 Road', 'Phetkasem Road', 'Sriphuwanart Road', 'Supasarnrangsan Road', 'Thammanoonvithi Road', 'Pracharak Road', 'Chotevithee Road', 'Saengthong Road'] },
-            { city: 'Udon Thani', state: 'Udon Thani', postalPrefix: '410', streets: ['Mittraphap Road', 'Pho Sri Road', 'Srisuk Road', 'Udon Dusadee Road', 'Nittayo Road', 'Thahan Road', 'Prajak Road', 'Sathanee Road', 'Mak Khaeng Road', 'Nong Bua Road'] },
-            { city: 'Nakhon Ratchasima', state: 'Nakhon Ratchasima', postalPrefix: '300', streets: ['Ratchadamnoen Road', 'Mittraphap Road', 'Chomphon Road', 'Hua Thale Road', 'Suranaree Road', 'Yommarat Road', 'Patchasema Road', 'Phoklang Road', 'Assadang Road', 'Kumon Road'] },
-            { city: 'Surat Thani', state: 'Surat Thani', postalPrefix: '840', streets: ['Talad Mai Road', 'Na Mueang Road', 'Chon Kasem Road', 'Ban Don Road', 'Sri Wichai Road', 'Khao Hua Jook Road', 'Rim Kok Road', 'Donnok Road', 'Wat Pho Road', 'Karoon Rat Road'] },
-            { city: 'Khon Kaen', state: 'Khon Kaen', postalPrefix: '400', streets: ['Mittraphap Road', 'Na Muang Road', 'Srichan Road', 'Klankluang Road', 'Ruen Rom Road', 'Pracha Samran Road', 'Sri Chan Road', 'Sothon Road', 'Chayangkul Road', 'Rob Mueang Road'] },
-            { city: 'Nakhon Si Thammarat', state: 'Nakhon Si Thammarat', postalPrefix: '800', streets: ['Ratchadamnoen Road', 'Tha Wang Road', 'Pattanakarn Khu Khwang Road', 'Si Thammasok Road', 'Phra Pak Road', 'Karaboon Road', 'Nakhon Nueang Khet Road', 'Na Mueang Road', 'Chaiya Road', 'Maha Rat Road'] }
-        ]
-    },
-    'SG': {
-        name: 'Singapore', flag: '🇸🇬', currency: 'SGD', phoneCode: '+65',
-        cities: [
-            { city: 'Singapore', state: 'Central Region', postalPrefix: '018', streets: ['Orchard Road', 'Marina Bay Sands', 'Sentosa', 'Bugis Street', 'Clarke Quay', 'Chinatown', 'Little India', 'Kampong Glam', 'Riverside', 'Holland Village'] },
-            { city: 'Jurong', state: 'West Region', postalPrefix: '609', streets: ['Jurong East Street', 'Jurong West Street', 'Boon Lay Way', 'Pioneer Road', 'Tuas Road', 'International Road', 'Corporation Road', 'Penjuru Road', 'Jalan Buroh', 'Benoi Road'] },
-            { city: 'Woodlands', state: 'North Region', postalPrefix: '730', streets: ['Woodlands Avenue', 'Woodlands Drive', 'Woodlands Street', 'Marsiling Road', 'Admiralty Road', 'Sembawang Road', 'Canberra Road', 'Gambas Avenue', 'Wellington Road', 'Riverside Road'] },
-            { city: 'Tampines', state: 'East Region', postalPrefix: '520', streets: ['Tampines Avenue', 'Tampines Street', 'Pasir Ris Drive', 'Bedok North Road', 'Simei Street', 'Changi Road', 'Upper Changi Road', 'Eunos Link', 'Kaki Bukit Road', 'Ubi Avenue'] },
-            { city: 'Yishun', state: 'North Region', postalPrefix: '760', streets: ['Yishun Avenue', 'Yishun Street', 'Yishun Ring Road', 'Khatib Road', 'Sembawang Road', 'Canberra Link', 'Springleaf Road', 'Miltonia Close', 'Jalan Mata Ayer', 'Yishun Central'] },
-            { city: 'Ang Mo Kio', state: 'Central Region', postalPrefix: '560', streets: ['Ang Mo Kio Avenue', 'Ang Mo Kio Street', 'Ang Mo Kio Industrial Park', 'Ang Mo Kio Central', 'Kebun Baru Link', 'Cheng San Road', 'Yio Chu Kang Road', 'Anderson Road', 'Jalan Kayu', 'Seletar Road'] },
-            { city: 'Bedok', state: 'East Region', postalPrefix: '460', streets: ['Bedok North Avenue', 'Bedok South Avenue', 'Bedok Reservoir Road', 'Bedok Road', 'New Upper Changi Road', 'Chai Chee Road', 'Kembangan Road', 'Frankel Avenue', 'Telok Kurau Road', 'Jalan Eunos'] },
-            { city: 'Hougang', state: 'North-East Region', postalPrefix: '530', streets: ['Hougang Avenue', 'Hougang Street', 'Hougang Central', 'Upper Serangoon Road', 'Buangkok Green', 'Buangkok Link', 'Kovan Road', 'Florence Road', 'Lim Ah Pin Road', 'Jalan Telang'] },
-            { city: 'Punggol', state: 'North-East Region', postalPrefix: '820', streets: ['Punggol Avenue', 'Punggol Drive', 'Punggol Road', 'Punggol Central', 'Punggol Field', 'Punggol Way', 'Punggol Place', 'Edgedale Plains', 'Waterway', 'Sentul Crescent'] },
-            { city: 'Sengkang', state: 'North-East Region', postalPrefix: '790', streets: ['Sengkang Avenue', 'Sengkang East Road', 'Sengkang West Road', 'Sengkang Square', 'Compassvale Drive', 'Rivervale Drive', 'Fernvale Road', 'Anchorvale Road', 'Jalan Kayu', 'Buangkok Drive'] }
-        ]
-    },
-    'IT': {
-        name: 'Italy', flag: '🇮🇹', currency: 'EUR', phoneCode: '+39',
-        cities: [
-            { city: 'Rome', state: 'Lazio', postalPrefix: '001', streets: ['Via del Corso', 'Via Veneto', 'Via Nazionale', 'Via Condotti', 'Via Montenapoleone', 'Via del Babuino', 'Via della Conciliazione', 'Via Cavour', 'Via Appia Nuova', 'Via Cola di Rienzo'] },
-            { city: 'Milan', state: 'Lombardy', postalPrefix: '201', streets: ['Via Montenapoleone', 'Corso Buenos Aires', 'Via Torino', 'Corso Vittorio Emanuele II', 'Via Dante', 'Via Brera', 'Corso Como', 'Via della Spiga', 'Via Manzoni', 'Corso Sempione'] },
-            { city: 'Naples', state: 'Campania', postalPrefix: '801', streets: ['Via Toledo', 'Via Chiaia', 'Corso Umberto I', 'Via San Gregorio Armeno', 'Via Partenope', 'Via Caracciolo', 'Piazza del Plebiscito', 'Via Duomo', 'Via Medina', 'Via Nuova Marina'] },
-            { city: 'Turin', state: 'Piedmont', postalPrefix: '101', streets: ['Via Roma', 'Via Po', 'Via Garibaldi', 'Corso Vittorio Emanuele II', 'Via Lagrange', 'Via Carlo Alberto', 'Via Nizza', 'Corso Duca degli Abruzzi', 'Via Cibrario', 'Corso Francia'] },
-            { city: 'Palermo', state: 'Sicily', postalPrefix: '901', streets: ['Via Maqueda', 'Via Roma', 'Corso Vittorio Emanuele', 'Via della Libertà', 'Via Notarbartolo', 'Via Dante', 'Via Mariano Stabile', 'Via Principe di Belmonte', 'Via Ruggero Settimo', 'Via Cavour'] },
-            { city: 'Genoa', state: 'Liguria', postalPrefix: '161', streets: ['Via XX Settembre', 'Via Garibaldi', 'Via Balbi', 'Via San Lorenzo', 'Corso Italia', 'Via di Pré', 'Via del Campo', 'Piazza De Ferrari', 'Via Dante', 'Via Assarotti'] },
-            { city: 'Bologna', state: 'Emilia-Romagna', postalPrefix: '401', streets: ['Via Indipendenza', 'Via Rizzoli', 'Via Zamboni', 'Via dell\'Abbadia', 'Via Ugo Bassi', 'Via Farini', 'Via Santo Stefano', 'Via Marsala', 'Via Mascarella', 'Via Irnerio'] },
-            { city: 'Florence', state: 'Tuscany', postalPrefix: '501', streets: ['Via de\' Tornabuoni', 'Via Roma', 'Via Calzaiuoli', 'Via del Proconsolo', 'Via de\' Benci', 'Via de\' Neri', 'Via dei Calzaiuoli', 'Borgo San Lorenzo', 'Via della Vigna Nuova', 'Via Panzani'] },
-            { city: 'Bari', state: 'Apulia', postalPrefix: '701', streets: ['Via Sparano da Bari', 'Corso Cavour', 'Via Argiro', 'Via Roberto da Bari', 'Corso Vittorio Emanuele II', 'Via Abate Gimma', 'Via Dante Alighieri', 'Lungomare Nazario Sauro', 'Via Brigata Regina', 'Via Quintino Sella'] },
-            { city: 'Catania', state: 'Sicily', postalPrefix: '951', streets: ['Via Etnea', 'Via Garibaldi', 'Corso Sicilia', 'Via Vittorio Emanuele II', 'Via Crociferi', 'Via Stesicoro', 'Via VI Aprile', 'Via Dusmet', 'Via Santa Maria di Betlemme', 'Via Plebiscito'] }
-        ]
-    },
-    'ES': {
-        name: 'Spain', flag: '🇪🇸', currency: 'EUR', phoneCode: '+34',
-        cities: [
-            { city: 'Madrid', state: 'Community of Madrid', postalPrefix: '280', streets: ['Gran Vía', 'Calle de Alcalá', 'Paseo de la Castellana', 'Calle de Serrano', 'Calle de Preciados', 'Calle Mayor', 'Calle de Goya', 'Calle de Atocha', 'Paseo del Prado', 'Calle de Toledo'] },
-            { city: 'Barcelona', state: 'Catalonia', postalPrefix: '080', streets: ['La Rambla', 'Passeig de Gràcia', 'Carrer de Balmes', 'Avinguda Diagonal', 'Carrer de Ferran', 'Carrer de Pelai', 'Passeig de Sant Joan', 'Carrer d\'Aragó', 'Carrer de Provença', 'Gran Via de les Corts Catalanes'] },
-            { city: 'Valencia', state: 'Valencian Community', postalPrefix: '460', streets: ['Carrer de Colón', 'Plaça de l\'Ajuntament', 'Carrer de Xàtiva', 'Avinguda del Port', 'Carrer de la Pau', 'Plaça de la Reina', 'Carrer de Sagunt', 'Avinguda de Blasco Ibáñez', 'Carrer de Russafa', 'Gran Via de Ferran el Catòlic'] },
-            { city: 'Seville', state: 'Andalusia', postalPrefix: '410', streets: ['Avenida de la Constitución', 'Calle Sierpes', 'Calle Tetuán', 'Calle Velázquez', 'Calle Betis', 'Calle San Fernando', 'Avenida de la Palmera', 'Calle Reyes Católicos', 'Calle Cuna', 'Calle Laraña'] },
-            { city: 'Zaragoza', state: 'Aragon', postalPrefix: '500', streets: ['Paseo de la Independencia', 'Calle Alfonso I', 'Gran Vía', 'Calle Don Jaime I', 'Paseo de Sagasta', 'Avenida de Madrid', 'Calle San Vicente de Paúl', 'Calle Manifestación', 'Calle Coso', 'Avenida de Goya'] },
-            { city: 'Málaga', state: 'Andalusia', postalPrefix: '290', streets: ['Calle Larios', 'Calle Marqués de Larios', 'Paseo del Parque', 'Calle Alcazabilla', 'Avenida de Andalucía', 'Calle Granada', 'Calle Atarazanas', 'Paseo de Reding', 'Calle Carretería', 'Calle Victoria'] },
-            { city: 'Murcia', state: 'Region of Murcia', postalPrefix: '300', streets: ['Gran Vía de la Manga', 'Calle Trapería', 'Plaza Circular', 'Avenida de la Libertad', 'Calle Platería', 'Calle Apostoles', 'Avenida Miguel de Cervantes', 'Calle Santa Clara', 'Calle Jabonerías', 'Paseo de Corvera'] },
-            { city: 'Palma', state: 'Balearic Islands', postalPrefix: '070', streets: ['Passeig del Born', 'Avinguda Jaume III', 'Carrer de Sant Miquel', 'Passeig Marítim', 'Carrer de Sindicat', 'Avinguda de Gabriel Roca', 'Carrer de Colom', 'Plaça d\'Espanya', 'Carrer de Blanquerna', 'Avinguda de Portugal'] },
-            { city: 'Las Palmas', state: 'Canary Islands', postalPrefix: '350', streets: ['Calle Triana', 'Avenida Mesa y López', 'Paseo de Las Canteras', 'Calle Mayor de Triana', 'Avenida Marítima', 'Calle Pérez Galdós', 'Calle León y Castillo', 'Avenida José Mesa y López', 'Calle Bravo Murillo', 'Calle Tomás Morales'] },
-            { city: 'Bilbao', state: 'Basque Country', postalPrefix: '480', streets: ['Gran Vía de Don Diego López de Haro', 'Calle Ledesma', 'Calle Ercilla', 'Paseo del Arenal', 'Calle Colón de Larreátegui', 'Calle Diputación', 'Calle Rodríguez Arias', 'Alameda de Recalde', 'Calle Hurtado de Amézaga', 'Plaza Circular'] }
-        ]
-    },
-    'CH': {
-        name: 'Switzerland', flag: '🇨🇭', currency: 'CHF', phoneCode: '+41',
-        cities: [
-            { city: 'Zurich', state: 'Zurich', postalPrefix: '800', streets: ['Bahnhofstrasse', 'Limmatquai', 'Rennweg', 'Niederdorfstrasse', 'Langstrasse', 'Seefeldstrasse', 'Uraniastrasse', 'Löwenstrasse', 'Universitätstrasse', 'Talstrasse'] },
-            { city: 'Geneva', state: 'Geneva', postalPrefix: '120', streets: ['Rue du Rhône', 'Rue de la Croix-d\'Or', 'Rue du Marché', 'Rue de Rive', 'Boulevard du Pont-d\'Arve', 'Rue de la Corraterie', 'Quai du Mont-Blanc', 'Rue du Perron', 'Rue de la Confédération', 'Avenue de la Paix'] },
-            { city: 'Basel', state: 'Basel-Stadt', postalPrefix: '400', streets: ['Freie Strasse', 'Steinenvorstadt', 'Aeschenvorstadt', 'Greifengasse', 'Clarastrasse', 'Marktplatz', 'Rheingasse', 'Spalenberg', 'Barfüsserplatz', 'Gerbergasse'] },
-            { city: 'Lausanne', state: 'Vaud', postalPrefix: '100', streets: ['Rue de Bourg', 'Avenue de la Gare', 'Place Saint-François', 'Rue du Pont', 'Rue de la Palud', 'Boulevard de Grancy', 'Avenue du Tribunal-Fédéral', 'Rue Centrale', 'Place de la Riponne', 'Avenue de Rumine'] },
-            { city: 'Bern', state: 'Bern', postalPrefix: '300', streets: ['Spitalgasse', 'Marktgasse', 'Kramgasse', 'Gerechtigkeitsgasse', 'Bundesplatz', 'Bärenplatz', 'Waisenhausplatz', 'Aarbergergasse', 'Neuengasse', 'Schauplatzgasse'] },
-            { city: 'Winterthur', state: 'Zurich', postalPrefix: '840', streets: ['Marktgasse', 'Untertor', 'Obertor', 'Stadthausstrasse', 'Bahnhofstrasse', 'Technikumstrasse', 'Museumstrasse', 'Rudolfstrasse', 'Merzbrücke', 'Neumarkt'] },
-            { city: 'Lucerne', state: 'Lucerne', postalPrefix: '600', streets: ['Bahnhofstrasse', 'Pilatusstrasse', 'Hertensteinstrasse', 'Grendelstrasse', 'Weinmarkt', 'Schwanenplatz', 'Kapellplatz', 'Rathausquai', 'Haldenstrasse', 'Hirschmattstrasse'] },
-            { city: 'St. Gallen', state: 'St. Gallen', postalPrefix: '900', streets: ['Multergasse', 'Marktgasse', 'Neugasse', 'Schmiedgasse', 'Spisergasse', 'Bohl', 'Marktplatz', 'Blumenbergplatz', 'Gallusstrasse', 'Bahnhofstrasse'] },
-            { city: 'Lugano', state: 'Ticino', postalPrefix: '690', streets: ['Via Nassa', 'Via Riforma', 'Riva Albertolli', 'Via Pessina', 'Via Pretorio', 'Piazza Riforma', 'Via Canova', 'Corso Enrico Pestalozzi', 'Via Marconi', 'Via Pretorio'] },
-            { city: 'Biel/Bienne', state: 'Bern', postalPrefix: '250', streets: ['Bahnhofstrasse', 'Nidaugasse', 'Zentralstrasse', 'Marktgasse', 'Obergasse', 'Untergasse', 'Ring', 'General-Dufour-Strasse', 'Rue de la Gare', 'Rue du Temple'] }
-        ]
-    },
-    'SE': {
-        name: 'Sweden', flag: '🇸🇪', currency: 'SEK', phoneCode: '+46',
-        cities: [
-            { city: 'Stockholm', state: 'Stockholm County', postalPrefix: '111', streets: ['Drottninggatan', 'Sveavägen', 'Kungsgatan', 'Vasagatan', 'Hamngatan', 'Birger Jarlsgatan', 'Strandvägen', 'Götgatan', 'Hornsgatan', 'Biblioteksgatan'] },
-            { city: 'Gothenburg', state: 'Västra Götaland County', postalPrefix: '411', streets: ['Avenyn', 'Kungsportsavenyn', 'Vallgatan', 'Magasinsgatan', 'Linnégatan', 'Vasagatan', 'Östra Hamngatan', 'Västra Hamngatan', 'Kungsgatan', 'Södra Vägen'] },
-            { city: 'Malmö', state: 'Skåne County', postalPrefix: '211', streets: ['Södergatan', 'Storgatan', 'Amiralsgatan', 'Baltzarsgatan', 'Stora Nygatan', 'Lilla Nygatan', 'Gustav Adolfs torg', 'Västra Hamngatan', 'Adelgatan', 'Hamngatan'] },
-            { city: 'Uppsala', state: 'Uppsala County', postalPrefix: '751', streets: ['Dragarbrunnsgatan', 'Kungsängsgatan', 'Svartbäcksgatan', 'Stora Torget', 'Vaksalagatan', 'S:t Olofsgatan', 'S:t Persgatan', 'Bangårdsgatan', 'Trädgårdsgatan', 'Östra Ågatan'] },
-            { city: 'Linköping', state: 'Östergötland County', postalPrefix: '581', streets: ['Storgatan', 'Nygatan', 'Drottninggatan', 'Kungsgatan', 'Repslagaregatan', 'Ågatan', 'Trädgårdstorget', 'Platensgatan', 'Klostergatan', 'Hantverkargatan'] },
-            { city: 'Västerås', state: 'Västmanland County', postalPrefix: '721', streets: ['Stora Gatan', 'Vasagatan', 'Kungsgatan', 'Hantverkargatan', 'Smedjegatan', 'Sturegatan', 'Slottsgatan', 'Kristinagatan', 'Bäckgatan', 'Munkgatan'] },
-            { city: 'Örebro', state: 'Örebro County', postalPrefix: '701', streets: ['Drottninggatan', 'Kungsgatan', 'Storgatan', 'Järnvägsgatan', 'Köpmangatan', 'Södra Brogatan', 'Norra Brogatan', 'Slottsgatan', 'Olaigatan', 'Klostergatan'] },
-            { city: 'Helsingborg', state: 'Skåne County', postalPrefix: '251', streets: ['Kullagatan', 'Storgatan', 'Bruksgatan', 'Järnvägsgatan', 'Södra Storgatan', 'Norra Storgatan', 'Drottninggatan', 'Sundstorget', 'Rönnowsgatan', 'Kungsgatan'] },
-            { city: 'Norrköping', state: 'Östergötland County', postalPrefix: '601', streets: ['Drottninggatan', 'Kungsgatan', 'Repslagaregatan', 'Skolgatan', 'Nygatan', 'Trädgårdsgatan', 'Tunnbindaregatan', 'Södra Promenaden', 'Norra Promenaden', 'Prästgatan'] },
-            { city: 'Jönköping', state: 'Jönköping County', postalPrefix: '551', streets: ['Kungsgatan', 'Storgatan', 'Drottninggatan', 'Västra Storgatan', 'Östra Storgatan', 'Barnarpsgatan', 'Klostergatan', 'Södra Strandgatan', 'Norra Strandgatan', 'Brunnsgatan'] }
-        ]
-    },
-    'NO': {
-        name: 'Norway', flag: '🇳🇴', currency: 'NOK', phoneCode: '+47',
-        cities: [
-            { city: 'Oslo', state: 'Oslo', postalPrefix: '001', streets: ['Karl Johans gate', 'Storgata', 'Grensen', 'Youngstorget', 'Akersgata', 'Universitetsgata', 'Prinsens gate', 'Dronningens gate', 'Rådhusgata', 'Bogstadveien'] },
-            { city: 'Bergen', state: 'Vestland', postalPrefix: '500', streets: ['Torgallmenningen', 'Strandgaten', 'Bryggen', 'Nygårdsgaten', 'Vaskerelven', 'Olav Kyrres gate', 'Fjøsangerveien', 'Kalfargaten', 'Kong Oscars gate', 'Vestre Torggate'] },
-            { city: 'Trondheim', state: 'Trøndelag', postalPrefix: '700', streets: ['Nordre gate', 'Olav Tryggvasons gate', 'Munkegata', 'Kongens gate', 'Prinsens gate', 'Bakklandet', 'Innherredsveien', 'Elgeseter gate', 'Klostergata', 'Søndre gate'] },
-            { city: 'Stavanger', state: 'Rogaland', postalPrefix: '400', streets: ['Kirkegata', 'Øvre Holmegate', 'Klubbgata', 'Domkirkeplassen', 'Skagenkaien', 'Strandkaien', 'Verksgata', 'Løkkeveien', 'Madlaveien', 'Sørmarkveien'] },
-            { city: 'Fredrikstad', state: 'Viken', postalPrefix: '160', streets: ['Storgata', 'Brogata', 'Nygaardsgata', 'Farmannsgata', 'Kirkegata', 'Torvgata', 'Vestsiden', 'Østsiden', 'Gamlebyen', 'Cicignongata'] },
-            { city: 'Sandnes', state: 'Rogaland', postalPrefix: '430', streets: ['Langgata', 'Kirkegata', 'Rådhusgata', 'Storgata', 'Elvegata', 'Jærveien', 'Ganddalsveien', 'Søndre Bane vei', 'Hoveveien', 'Gravarsveien'] },
-            { city: 'Kristiansand', state: 'Agder', postalPrefix: '460', streets: ['Markens gate', 'Dronningens gate', 'Rådhusgata', 'Tollbodgata', 'Kirkegata', 'Vestre Strandgate', 'Østre Strandgate', 'Festningsgata', 'Gyldenløves gate', 'Elvegata'] },
-            { city: 'Drammen', state: 'Viken', postalPrefix: '300', streets: ['Bragernes torg', 'Storgata', 'Engene', 'Nedre Storgate', 'Øvre Storgate', 'Tollbugata', 'Bragernes Strand', 'Strømsø Torg', 'Grønland', 'Telthusgata'] },
-            { city: 'Porsgrunn', state: 'Vestfold og Telemark', postalPrefix: '390', streets: ['Storgata', 'Rådhusgata', 'Kirkegata', 'Torggata', 'Skiensgata', 'Downs vei', 'Kulltangvegen', 'Osebrogata', 'Strandgata', 'Brogata'] },
-            { city: 'Skien', state: 'Vestfold og Telemark', postalPrefix: '370', streets: ['Heddalsvegen', 'Kongens gate', 'Prinsessegata', 'Rådhusgata', 'Storgata', 'Torggata', 'Telemarksgata', 'Lie gt', 'Skogvegen', 'Bakkedalvegen'] }
-        ]
-    },
-    'DK': {
-        name: 'Denmark', flag: '🇩🇰', currency: 'DKK', phoneCode: '+45',
-        cities: [
-            { city: 'Copenhagen', state: 'Capital Region', postalPrefix: '100', streets: ['Strøget', 'Nyhavn', 'Vesterbrogade', 'Nørrebrogade', 'Østerbrogade', 'Amagerbrogade', 'Gammel Kongevej', 'Istedgade', 'Købmagergade', 'Frederiksborggade'] },
-            { city: 'Aarhus', state: 'Central Denmark', postalPrefix: '800', streets: ['Store Torv', 'Søndergade', 'Ryesgade', 'Banegårdsgade', 'Vestergade', 'Nørregade', 'Guldsmedgade', 'Mejlgade', 'Jægergårdsgade', 'Frederiksgade'] },
-            { city: 'Odense', state: 'Southern Denmark', postalPrefix: '500', streets: ['Kongensgade', 'Vestergade', 'Østergade', 'Nørregade', 'Søndergade', 'Overgade', 'Rosenbækgade', 'Nedergade', 'Albanigade', 'Vindegade'] },
-            { city: 'Aalborg', state: 'North Denmark', postalPrefix: '900', streets: ['Boulevarden', 'Nytorv', 'Gammel Torv', 'Algade', 'Bispensgade', 'Danmarksgade', 'Vesterbro', 'Østerbro', 'Hasserisvej', 'Vesterå'] },
-            { city: 'Frederiksberg', state: 'Capital Region', postalPrefix: '180', streets: ['Frederiksberg Allé', 'Falkoner Allé', 'Godthåbsvej', 'Gammel Kongevej', 'Vesterbrogade', 'Roskildevej', 'Smorumvej', 'Nordre Fasanvej', 'Peter Bangs Vej', 'Søndre Fasanvej'] },
-            { city: 'Esbjerg', state: 'Southern Denmark', postalPrefix: '670', streets: ['Kongensgade', 'Torvegade', 'Skolegade', 'Strandbygade', 'Nørregade', 'Søndergade', 'Vesterhavsgade', 'Exnersgade', 'Stationsvej', 'Bakkevej'] },
-            { city: 'Randers', state: 'Central Denmark', postalPrefix: '890', streets: ['Torvegade', 'Storegade', 'Rådhusgade', 'Østergade', 'Vestergade', 'Nørregade', 'Søndergade', 'Rosenvænget', 'Mariagervej', 'Vestergade'] },
-            { city: 'Kolding', state: 'Southern Denmark', postalPrefix: '600', streets: ['Helligkorsgade', 'Jernbanegade', 'Søndergade', 'Bredgade', 'Låsbygade', 'Ryttergade', 'Akseltorv', 'Nytorv', 'Dommergade', 'Slotsalleen'] },
-            { city: 'Vejle', state: 'Southern Denmark', postalPrefix: '710', streets: ['Rådhustorvet', 'Vestergade', 'Nørregade', 'Søndergade', 'Kirkegade', 'Borgvold', 'Horsensvej', 'Dæmningen', 'Vestre Engvej', 'Skolegade'] },
-            { city: 'Horsens', state: 'Central Denmark', postalPrefix: '870', streets: ['Søndergade', 'Nørregade', 'Rådhustorvet', 'Borgergade', 'Jessensgade', 'Slotsgade', 'Vestergade', 'Bakkelund', 'Sundvej', 'Skolegade'] }
-        ]
-    },
-    'FI': {
-        name: 'Finland', flag: '🇫🇮', currency: 'EUR', phoneCode: '+358',
-        cities: [
-            { city: 'Helsinki', state: 'Uusimaa', postalPrefix: '001', streets: ['Mannerheimintie', 'Aleksanterinkatu', 'Esplanadi', 'Fredrikinkatu', 'Bulevardi', 'Kaisaniemenkatu', 'Unioninkatu', 'Pohjoisesplanadi', 'Eteläesplanadi', 'Museokatu'] },
-            { city: 'Espoo', state: 'Uusimaa', postalPrefix: '021', streets: ['Tapiolan keskustie', 'Espoon keskus', 'Leppävaarankatu', 'Otaniementie', 'Keilaranta', 'Insinöörinkatu', 'Tekniikantie', 'Miestentie', 'Tietotie', 'Otakaari'] },
-            { city: 'Tampere', state: 'Pirkanmaa', postalPrefix: '331', streets: ['Hämeenkatu', 'Aleksis Kiven katu', 'Satakunnankatu', 'Itsenäisyydenkatu', 'Kalevan puistotie', 'Rautatienkatu', 'Pyynikintie', 'Näsilinnankatu', 'Kuninkaankatu', 'Puutarhakatu'] },
-            { city: 'Vantaa', state: 'Uusimaa', postalPrefix: '013', streets: ['Tikkurilantie', 'Asematie', 'Kielotie', 'Mannerheimintie', 'Unikkotie', 'Talvikkitie', 'Neilikkatie', 'Orvokkitie', 'Valkealanpolku', 'Pähkinärinteentie'] },
-            { city: 'Oulu', state: 'North Ostrobothnia', postalPrefix: '901', streets: ['Rotuaari', 'Kirkkokatu', 'Pakkahuoneenkatu', 'Isokatu', 'Rautatienkatu', 'Hallituskatu', 'Saaristonkatu', 'Albertinkatu', 'Kajaaninkatu', 'Torikatu'] },
-            { city: 'Turku', state: 'Southwest Finland', postalPrefix: '201', streets: ['Yliopistonkatu', 'Aurakatu', 'Eerikinkatu', 'Humalistonkatu', 'Puutarhakatu', 'Linnankatu', 'Kaskenkatu', 'Hämeenkatu', 'Brahenkatu', 'Koulukatu'] },
-            { city: 'Jyväskylä', state: 'Central Finland', postalPrefix: '401', streets: ['Kauppakatu', 'Kävelykatu', 'Väinönkatu', 'Yliopistonkatu', 'Gummeruksenkatu', 'Kalevankatu', 'Asemakatu', 'Vapaudenkatu', 'Cygnaeuksenkatu', 'Harjukatu'] },
-            { city: 'Lahti', state: 'Päijät-Häme', postalPrefix: '151', streets: ['Aleksanterinkatu', 'Rautatienkatu', 'Vapaudenkatu', 'Hämeenkatu', 'Kauppakatu', 'Mariankatu', 'Harjukatu', 'Lahdenkatu', 'Saimaankatu', 'Päijänteentie'] },
-            { city: 'Kuopio', state: 'North Savo', postalPrefix: '701', streets: ['Kauppakatu', 'Puijonkatu', 'Haapaniemenkatu', 'Tulliportinkatu', 'Vuorikatu', 'Asemakatu', 'Minna Canthin katu', 'Ajuri katu', 'Satamakatu', 'Torikatu'] },
-            { city: 'Kouvola', state: 'Kymenlaakso', postalPrefix: '451', streets: ['Kauppalankatu', 'Keskuskatu', 'Salpausselänkatu', 'Marjoniementie', 'Kouvolankatu', 'Hallituskatu', 'Valtakatu', 'Sairaalankatu', 'Kymenlaaksonkatu', 'Keskusaukio'] }
-        ]
-    },
-    'IE': {
-        name: 'Ireland', flag: '🇮🇪', currency: 'EUR', phoneCode: '+353',
-        cities: [
-            { city: 'Dublin', state: 'Leinster', postalPrefix: 'D01', streets: ['O\'Connell Street', 'Grafton Street', 'Dame Street', 'Henry Street', 'Temple Bar', 'Baggot Street', 'Leeson Street', 'Kildare Street', 'Merrion Square', 'St Stephen\'s Green'] },
-            { city: 'Cork', state: 'Munster', postalPrefix: 'T12', streets: ['Patrick Street', 'Oliver Plunkett Street', 'Grand Parade', 'Washington Street', 'St Patrick\'s Street', 'MacCurtain Street', 'Shandon Street', 'South Mall', 'North Main Street', 'Douglas Street'] },
-            { city: 'Limerick', state: 'Munster', postalPrefix: 'V94', streets: ['O\'Connell Street', 'William Street', 'Cruises Street', 'Thomas Street', 'Patrick Street', 'Rutland Street', 'Catherine Street', 'Sarsfield Street', 'Henry Street', 'Cecil Street'] },
-            { city: 'Galway', state: 'Connacht', postalPrefix: 'H91', streets: ['Shop Street', 'Eyre Square', 'Quay Street', 'Cross Street', 'High Street', 'Mainguard Street', 'Williams Street', 'Middle Street', 'Abbeygate Street', 'Dominick Street'] },
-            { city: 'Waterford', state: 'Munster', postalPrefix: 'X91', streets: ['The Quay', 'Broad Street', 'Barronstrand Street', 'Michael Street', 'John Street', 'Patrick Street', 'George\'s Street', 'Parnell Street', 'O\'Connell Street', 'Gladstone Street'] },
-            { city: 'Drogheda', state: 'Leinster', postalPrefix: 'A92', streets: ['West Street', 'Shop Street', 'Peter Street', 'Laurence Street', 'Stockwell Lane', 'Fair Street', 'Palace Street', 'Dominick Street', 'Trinity Street', 'Mary Street'] },
-            { city: 'Dundalk', state: 'Leinster', postalPrefix: 'A91', streets: ['Clanbrassil Street', 'Park Street', 'Market Square', 'Earl Street', 'Francis Street', 'Bridge Street', 'Crowe Street', 'Church Street', 'Castle Road', 'Dublin Road'] },
-            { city: 'Swords', state: 'Leinster', postalPrefix: 'K67', streets: ['Main Street', 'North Street', 'Malahide Road', 'Dublin Road', 'Bridge Street', 'Chapel Lane', 'Forster Way', 'The Plaza', 'Rathbeale Road', 'Glen Ellan Road'] },
-            { city: 'Bray', state: 'Leinster', postalPrefix: 'A98', streets: ['Main Street', 'Quinsborough Road', 'Bray Seafront', 'Florence Road', 'Novara Avenue', 'Killarney Road', 'Herbert Road', 'Boghall Road', 'Vevay Road', 'Dargle Road'] },
-            { city: 'Navan', state: 'Leinster', postalPrefix: 'C15', streets: ['Trimgate Street', 'Market Square', 'Kennedy Road', 'Watergate Street', 'Brews Hill', 'Ludlow Street', 'Bridge Street', 'Academy Street', 'Railway Street', 'Commons Road'] }
-        ]
-    },
-    'NZ': {
-        name: 'New Zealand', flag: '🇳🇿', currency: 'NZD', phoneCode: '+64',
-        cities: [
-            { city: 'Auckland', state: 'Auckland', postalPrefix: '1010', streets: ['Queen Street', 'Karangahape Road', 'Ponsonby Road', 'Dominion Road', 'Symonds Street', 'K Road', 'High Street', 'Vulcan Lane', 'Britomart Place', 'Customs Street'] },
-            { city: 'Wellington', state: 'Wellington', postalPrefix: '6011', streets: ['Lambton Quay', 'Courtenay Place', 'Cuba Street', 'Willis Street', 'Manners Street', 'Featherston Street', 'Taranaki Street', 'Vivian Street', 'Wakefield Street', 'Dixon Street'] },
-            { city: 'Christchurch', state: 'Canterbury', postalPrefix: '8011', streets: ['Colombo Street', 'Riccarton Road', 'Hagley Avenue', 'Papanui Road', 'Cranford Street', 'Bealey Avenue', 'Victoria Street', 'High Street', 'Cashel Street', 'Hereford Street'] },
-            { city: 'Hamilton', state: 'Waikato', postalPrefix: '3204', streets: ['Victoria Street', 'Ward Street', 'Alexandra Street', 'Anglesea Street', 'Collingwood Street', 'Bryce Street', 'Claudelands Road', 'Grey Street', 'London Street', 'Tr istram Street'] },
-            { city: 'Tauranga', state: 'Bay of Plenty', postalPrefix: '3110', streets: ['The Strand', 'Devonport Road', 'Cameron Road', 'Eleventh Avenue', 'Fifteenth Avenue', 'Chapel Street', 'Spring Street', 'Wharf Street', 'Willow Street', 'Harington Street'] },
-            { city: 'Dunedin', state: 'Otago', postalPrefix: '9016', streets: ['George Street', 'Princes Street', 'Cumberland Street', 'Stuart Street', 'Octagon', 'Moray Place', 'High Street', 'Albany Street', 'Great King Street', 'Hanover Street'] },
-            { city: 'Palmerston North', state: 'Manawatū-Whanganui', postalPrefix: '4410', streets: ['Broadway Avenue', 'The Square', 'Fitzherbert Avenue', 'Main Street', 'Cuba Street', 'King Street', 'Queen Street', 'Rangitikei Street', 'Featherston Street', 'Church Street'] },
-            { city: 'Napier', state: 'Hawke\'s Bay', postalPrefix: '4110', streets: ['Emerson Street', 'Hastings Street', 'Dickens Street', 'Marine Parade', 'Tennyson Street', 'Dalton Street', 'Munroe Street', 'Wellesley Road', 'Kennedy Road', 'Shakespeare Road'] },
-            { city: 'Nelson', state: 'Nelson', postalPrefix: '7010', streets: ['Trafalgar Street', 'Bridge Street', 'Hardy Street', 'Collingwood Street', 'Montgomery Square', 'Rutherford Street', 'Waimea Road', 'Milton Street', 'Vanguard Street', 'St Vincent Street'] },
-            { city: 'Rotorua', state: 'Bay of Plenty', postalPrefix: '3010', streets: ['Fenton Street', 'Tutanekai Street', 'Amohau Street', 'Hinemoa Street', 'Eruera Street', 'Pukuatua Street', 'Arawa Street', 'Amohia Street', 'Lake Road', 'Te Ngae Road'] }
-        ]
-    },
-    'TR': {
-        name: 'Turkey', flag: '🇹🇷', currency: 'TRY', phoneCode: '+90',
-        cities: [
-            { city: 'Istanbul', state: 'Istanbul', postalPrefix: '340', streets: ['İstiklal Caddesi', 'Bağdat Caddesi', 'Abdi İpekçi Caddesi', 'Rumeli Caddesi', 'Halaskargazi Caddesi', 'Vatan Caddesi', 'Millet Caddesi', 'Ordu Caddesi', 'Divanyolu Caddesi', 'Kennedy Caddesi'] },
-            { city: 'Ankara', state: 'Ankara', postalPrefix: '060', streets: ['Atatürk Bulvarı', 'Kızılay Meydanı', 'Tunalı Hilmi Caddesi', 'Cinnah Caddesi', 'Bahçelievler', 'Çankaya Caddesi', 'Gazi Mustafa Kemal Bulvarı', 'İnönü Caddesi', 'Meşrutiyet Caddesi', 'Olgunlar Caddesi'] },
-            { city: 'Izmir', state: 'İzmir', postalPrefix: '350', streets: ['Kordon', 'Kıbrıs Şehitleri Caddesi', 'Alsancak', 'Gazi Kadınlar Sokağı', 'Plevne Bulvarı', 'Mithatpaşa Caddesi', 'Fevzipaşa Bulvarı', 'Şair Eşref Bulvarı', 'Cumhuriyet Bulvarı', 'Halit Ziya Bulvarı'] },
-            { city: 'Bursa', state: 'Bursa', postalPrefix: '160', streets: ['Atatürk Caddesi', 'Cumhuriyet Caddesi', 'İnebey Caddesi', 'Haşim İşcan Caddesi', 'Fevzi Çakmak Caddesi', 'Kükürtlü Caddesi', 'Mudanya Caddesi', 'Altıparmak Caddesi', 'Setbaşı', 'Heykel'] },
-            { city: 'Antalya', state: 'Antalya', postalPrefix: '070', streets: ['Konyaaltı Caddesi', 'Lara Caddesi', 'Atatürk Bulvarı', 'Cumhuriyet Caddesi', 'Işıklar Caddesi', 'Güllük Caddesi', 'Kaleiçi', 'Fevzi Çakmak Caddesi', 'Aspendos Bulvarı', 'Yener Ulusoy Bulvarı'] },
-            { city: 'Adana', state: 'Adana', postalPrefix: '010', streets: ['Atatürk Caddesi', 'Ziyapaşa Bulvarı', 'İnönü Caddesi', 'Cumhuriyet Caddesi', 'Turhan Cemal Beriker Bulvarı', 'Kızılay Caddesi', 'Saydam Caddesi', 'Gazipaşa Bulvarı', 'Çakmak Caddesi', 'Alparslan Türkeş Bulvarı'] },
-            { city: 'Gaziantep', state: 'Gaziantep', postalPrefix: '270', streets: ['Atatürk Bulvarı', 'İnönü Caddesi', 'Karacaoğlan Caddesi', 'Sani Konukoğlu Bulvarı', 'Ordu Caddesi', 'Kamil Ocak Caddesi', 'Şehitkamil', 'Şahinbey', 'Mithatpaşa Caddesi', 'Karagöz Caddesi'] },
-            { city: 'Konya', state: 'Konya', postalPrefix: '420', streets: ['Mevlana Caddesi', 'Alaaddin Bulvarı', 'Karatay', 'Selçuklu', 'Feritpaşa Caddesi', 'Sille Caddesi', 'Milenyum Caddesi', 'Yeni İstanbul Caddesi', 'Ankara Caddesi', 'Kerkük Caddesi'] },
-            { city: 'Kayseri', state: 'Kayseri', postalPrefix: '380', streets: ['Cumhuriyet Meydanı', 'Sivas Caddesi', 'Millete Caddesi', 'Osman Kavuncu Bulvarı', 'Mustafa Kemal Paşa Bulvarı', 'Kartal Bulvarı', 'Erkilet Bulvarı', 'Sahabiye', 'Kiçikapı', 'Talas Caddesi'] },
-            { city: 'Mersin', state: 'Mersin', postalPrefix: '330', streets: ['Atatürk Caddesi', 'Uray Caddesi', 'Gazi Mustafa Kemal Bulvarı', 'İnönü Bulvarı', 'Çankaya Caddesi', 'Kuvay-ı Milliye Caddesi', 'Adnan Menderes Bulvarı', 'İstiklal Caddesi', 'Halkkent Bulvarı', 'Pozcu Caddesi'] }
-        ]
-    },
-    'AE': {
-        name: 'United Arab Emirates', flag: '🇦🇪', currency: 'AED', phoneCode: '+971',
-        cities: [
-            { city: 'Dubai', state: 'Dubai', postalPrefix: '00000', streets: ['Sheikh Zayed Road', 'Jumeirah Beach Road', 'Al Wasl Road', 'Sheikh Mohammed bin Zayed Road', 'Al Khaleej Road', 'Al Mina Road', '2nd December Street', 'Baniyas Road', 'Al Rigga Road', 'Mankhool Road'] },
-            { city: 'Abu Dhabi', state: 'Abu Dhabi', postalPrefix: '00000', streets: ['Corniche Road', 'Hamdan Street', 'Khalifa Street', 'Electra Street', 'Salam Street', 'Al Falah Street', 'Airport Road', 'Muroor Road', 'Al Khaleej Al Arabi Street', 'Sheikh Rashid bin Saeed Street'] },
-            { city: 'Sharjah', state: 'Sharjah', postalPrefix: '00000', streets: ['King Faisal Street', 'Al Wahda Street', 'Corniche Street', 'Al Ittihad Road', 'Al Nahda Street', 'Al Majaz', 'Rolla Street', 'Al Qasimia Street', 'University City Road', 'Maliha Road'] },
-            { city: 'Al Ain', state: 'Abu Dhabi', postalPrefix: '00000', streets: ['Khalifa bin Zayed Street', 'Al Ain Road', 'Sheikh Khalifa Street', 'Zayed bin Sultan Street', 'Hamdan Street', 'Al Jimi', 'Al Muwaiji', 'Al Towayya', 'Al Yahar', 'Al Foah'] },
-            { city: 'Ajman', state: 'Ajman', postalPrefix: '00000', streets: ['Sheikh Rashid bin Humaid Street', 'Sheikh Zayed Road', 'Al Ittihad Street', 'Corniche Road', 'Al Nuaimiya', 'Al Rashidiya', 'Al Jurf', 'Al Rawda', 'Al Mowaihat', 'Al Hamidiya'] },
-            { city: 'Ras Al Khaimah', state: 'Ras Al Khaimah', postalPrefix: '00000', streets: ['Al Nakheel', 'Corniche Al Qawasim', 'Sheikh Mohammed bin Salem Road', 'Al Muntasir Road', 'Al Uruba Street', 'Al Dhait', 'Al Hamra', 'Al Rams', 'Al Jazirah Al Hamra', 'Al Marjan Island'] },
-            { city: 'Fujairah', state: 'Fujairah', postalPrefix: '00000', streets: ['Hamad bin Abdullah Road', 'Sheikh Zayed Road', 'Corniche Road', 'Al Faseel Road', 'Al Gurfa', 'Al Bidiyah', 'Murbah', 'Sakamkam', 'Al Hayl', 'Madhab'] },
-            { city: 'Umm Al Quwain', state: 'Umm Al Quwain', postalPrefix: '00000', streets: ['King Faisal Road', 'Sheikh Zayed Road', 'Al Salamah', 'Al Riqqa', 'Al Humrah', 'Al Maqta', 'Falaj Al Mualla', 'Al Aahad', 'Al Rashidiya', 'Al Khor'] },
-            { city: 'Khor Fakkan', state: 'Sharjah', postalPrefix: '00000', streets: ['Corniche Road', 'Al Wahda Street', 'Al Mudifi', 'Al Haray', 'Al Rifah', 'Al Luluyah', 'Al Hayl', 'Al Shioukh', 'Al Rabah', 'Al Kholo'] },
-            { city: 'Dibba Al-Hisn', state: 'Fujairah', postalPrefix: '00000', streets: ['Al Corniche', 'Al Mina Road', 'Al Bidiya', 'Al Faqit', 'Al Hisn', 'Al Ghurfah', 'Al Saqamqam', 'Al Rus', 'Al Mahalab', 'Al Siji'] }
-        ]
-    },
-    'SA': {
-        name: 'Saudi Arabia', flag: '🇸🇦', currency: 'SAR', phoneCode: '+966',
-        cities: [
-            { city: 'Riyadh', state: 'Riyadh Province', postalPrefix: '115', streets: ['King Fahd Road', 'Olaya Street', 'Tahlia Street', 'King Abdullah Road', 'Sitteen Street', 'Al Murabba', 'Al Malaz', 'Diplomatic Quarter', 'Al Hamra', 'Al Wurud'] },
-            { city: 'Jeddah', state: 'Mecca Province', postalPrefix: '210', streets: ['Tahlia Street', 'Corniche Road', 'Prince Sultan Road', 'Madinah Road', 'Palestine Street', 'Al Andalus', 'Al Hamra', 'Al Rawdah', 'Al Balad', 'Al Shati'] },
-            { city: 'Mecca', state: 'Mecca Province', postalPrefix: '219', streets: ['King Abdul Aziz Road', 'Ibrahim Al Khalil Road', 'Al Aziziyah', 'Al Haram', 'Ajyad', 'Al Shubaikah', 'Al Rusayfah', 'Al Misfalah', 'Al Zaher', 'Al Awali'] },
-            { city: 'Medina', state: 'Madinah Province', postalPrefix: '200', streets: ['King Fahd Road', 'Quba Road', 'Al Haram', 'Al Aziziyah', 'Al Awaali', 'Al Baqi', 'Al Anbariyah', 'Al Khalidiyah', 'Al Qiblatain', 'Al Raya'] },
-            { city: 'Dammam', state: 'Eastern Province', postalPrefix: '314', streets: ['King Fahd Road', 'King Saud Road', 'Corniche Road', 'Al Khaleej Road', 'Al Amir Mohammad Bin Fahd Road', 'Al Shatea', 'Al Faisaliyah', 'Al Adamah', 'Al Badiyah', 'Al Mazruiyah'] },
-            { city: 'Khobar', state: 'Eastern Province', postalPrefix: '319', streets: ['King Fahd Road', 'Prince Faisal Bin Fahd Road', 'Corniche Road', 'Al Bandariyah', 'Al Aqrabiyah', 'Al Ulaya', 'Al Thuqbah', 'Al Yarmouk', 'Al Hamra', 'Al Khalidiyah'] },
-            { city: 'Taif', state: 'Mecca Province', postalPrefix: '219', streets: ['King Fahd Road', 'Shubra Street', 'Al Hawiyah', 'Al Qamariyah', 'Al Rudaf', 'Al Salamah', 'Al Mathnah', 'Al Wasitah', 'Al Nakheel', 'Al Fayha'] },
-            { city: 'Tabuk', state: 'Tabuk Province', postalPrefix: '714', streets: ['King Fahd Road', 'King Khalid Road', 'Al Amir Sultan Bin Abdulaziz Road', 'Al Aziziyah', 'Al Maseef', 'Al Nahda', 'Al Rawdah', 'Al Sulaymaniyah', 'Al Wurud', 'Al Qadsiyah'] },
-            { city: 'Buraydah', state: 'Al Qassim Province', postalPrefix: '514', streets: ['King Abdul Aziz Road', 'King Fahd Road', 'Al Iskan', 'Al Nakheel', 'Al Faisaliyah', 'Al Salam', 'Al Rifa', 'Al Bishr', 'Al Sabakh', 'Al Zuhur'] },
-            { city: 'Abha', state: 'Asir Province', postalPrefix: '625', streets: ['King Fahd Road', 'King Abdul Aziz Road', 'Al Sadd', 'Al Manhal', 'Al Muftaha', 'Al Nasim', 'Al Artawiyah', 'Al Maqsharin', 'Al Salamah', 'Al Shifa'] }
-        ]
-    },
-    'PK': {
-        name: 'Pakistan', flag: '🇵🇰', currency: 'PKR', phoneCode: '+92',
-        cities: [
-            { city: 'Karachi', state: 'Sindh', postalPrefix: '740', streets: ['M.A. Jinnah Road', 'Shahrah-e-Faisal', 'I.I. Chundrigar Road', 'Tariq Road', 'Clifton Road', 'Zamzama Boulevard', 'Khayaban-e-Ittehad', 'Bahadurabad', 'Saddar', 'Gulshan-e-Iqbal'] },
-            { city: 'Lahore', state: 'Punjab', postalPrefix: '540', streets: ['Mall Road', 'Ferozepur Road', 'Canal Road', 'Main Boulevard Gulberg', 'MM Alam Road', 'Liberty Market', 'Anarkali', 'Ichhra', 'Johar Town', 'DHA'] },
-            { city: 'Faisalabad', state: 'Punjab', postalPrefix: '380', streets: ['Jhang Road', 'Sargodha Road', 'Jaranwala Road', 'Samundri Road', 'Canal Road', 'Ghulam Muhammad Abad', 'Peoples Colony', 'Madina Town', 'Susan Road', 'D Ground'] },
-            { city: 'Rawalpindi', state: 'Punjab', postalPrefix: '460', streets: ['Murree Road', 'Peshawar Road', 'The Mall', 'Bank Road', 'Committee Chowk', 'Raja Bazaar', 'Saddar', 'Satellite Town', 'Bahria Town', 'Chaklala Scheme 3'] },
-            { city: 'Multan', state: 'Punjab', postalPrefix: '600', streets: ['Bosan Road', 'Abdali Road', 'Mall Road', 'Nishtar Road', 'Hussain Agahi', 'Chowk Bazaar', 'Shah Rukn-e-Alam', 'Cantt', 'Gulgasht Colony', 'Shah Shams'] },
-            { city: 'Hyderabad', state: 'Sindh', postalPrefix: '710', streets: ['Thandi Sarak', 'Fatima Jinnah Road', 'Auto Bhan Road', 'Qasimabad', 'Latifabad', 'Hirabad', 'Market Road', 'Risala Road', 'Saddar', 'Gari Khata'] },
-            { city: 'Peshawar', state: 'Khyber Pakhtunkhwa', postalPrefix: '250', streets: ['University Road', 'Khyber Road', 'Mall Road', 'Jamrud Road', 'Saddar Road', 'Qissa Khwani Bazaar', 'Board Bazaar', 'Hayatabad', 'Kohat Road', 'Ring Road'] },
-            { city: 'Quetta', state: 'Balochistan', postalPrefix: '873', streets: ['Jinnah Road', 'M.A. Jinnah Road', 'Zarghoon Road', 'Prince Road', 'Sariab Road', 'Airport Road', 'Samungli Road', 'Liaquat Bazaar', 'Kandahari Bazaar', 'Satellite Town'] },
-            { city: 'Islamabad', state: 'Islamabad Capital Territory', postalPrefix: '440', streets: ['Blue Area', 'Jinnah Avenue', 'Constitution Avenue', 'Kashmir Highway', 'Srinagar Highway', 'F-6', 'F-7', 'F-8', 'F-10', 'G-9'] },
-            { city: 'Sargodha', state: 'Punjab', postalPrefix: '401', streets: ['Club Road', 'Khayaban-e-Iqbal', 'Fatima Jinnah Road', 'University Road', 'Katchery Road', 'Railway Road', 'Sargodha Road', 'Canal Road', 'Satellite Town', 'Block X'] }
-        ]
-    },
-    'BD': {
-        name: 'Bangladesh', flag: '🇧🇩', currency: 'BDT', phoneCode: '+880',
-        cities: [
-            { city: 'Dhaka', state: 'Dhaka Division', postalPrefix: '100', streets: ['Gulshan Avenue', 'Banani Road', 'Dhanmondi Road', 'Mirpur Road', 'Motijheel', 'Uttara', 'Bashundhara', 'Mohakhali', 'Farmgate', 'Elephant Road'] },
-            { city: 'Chittagong', state: 'Chittagong Division', postalPrefix: '400', streets: ['Agrabad', 'GEC Circle', 'CDA Avenue', 'Khatunganj', 'Chawkbazar', 'Nasirabad', 'Khulshi', 'Halishahar', 'Patenga', 'Pahartali'] },
-            { city: 'Khulna', state: 'Khulna Division', postalPrefix: '910', streets: ['Khan Jahan Ali Road', 'Sonadanga', 'Boyra', 'Khalishpur', 'Daulatpur', 'Nirala', 'Shibbari', 'Rupsha', 'Nayabati', 'Mujgunni'] },
-            { city: 'Rajshahi', state: 'Rajshahi Division', postalPrefix: '600', streets: ['Shaheb Bazar', 'Alupatti', 'Kazihata', 'Uposhohor', 'Binodpur', 'Talaimari', 'New Market', 'Sahebbazar', 'Greater Road', 'Station Road'] },
-            { city: 'Sylhet', state: 'Sylhet Division', postalPrefix: '310', streets: ['Zindabazar', 'Bandar Bazar', 'Ambarkhana', 'Subid Bazar', 'Tilagarh', 'Uposhohor', 'Shahjalal Uposhohor', 'Mirabazar', 'Kazir Bazar', 'Chowhatta'] },
-            { city: 'Comilla', state: 'Chittagong Division', postalPrefix: '350', streets: ['Kandirpar', 'Monoharpur', 'Laksam Road', 'Jhautala', 'Racecourse', 'Tomsombridge', 'Victoria College', 'Kotbari', 'Bishwa Road', 'Paduar Bazar'] },
-            { city: 'Rangpur', state: 'Rangpur Division', postalPrefix: '540', streets: ['Station Road', 'Dhap Bazar', 'Jahaj Company More', 'Modern More', 'Kellaband', 'Mahiganj', 'Betpotti', 'Darshana', 'Lalbag', 'Rangpur Road'] },
-            { city: 'Mymensingh', state: 'Mymensingh Division', postalPrefix: '220', streets: ['Ganginarpar', 'Chorpara', 'Brahmaputra', 'Kewatkhali', 'Shambhuganj', 'Valuka', 'Trishal', 'Bhaluka', 'Muktagachha', 'Fulbaria'] },
-            { city: 'Barisal', state: 'Barisal Division', postalPrefix: '820', streets: ['Sadar Road', 'Hospital Road', 'Band Road', 'Nathullabad', 'Rupatali', 'Kalizira', 'Chawk Bazar', 'Bell Park', 'Kashipur', 'Amanatganj'] },
-            { city: 'Jessore', state: 'Khulna Division', postalPrefix: '740', streets: ['M.K. Road', 'Railgate', 'Chanchra', 'Ghope', 'Rajarhat', 'Bashundia', 'Dhaka Road', 'Jhikargachha', 'Keshabpur', 'Monirampur'] }
-        ]
-    },
-    'LK': {
-        name: 'Sri Lanka', flag: '🇱🇰', currency: 'LKR', phoneCode: '+94',
-        cities: [
-            { city: 'Colombo', state: 'Western Province', postalPrefix: '001', streets: ['Galle Road', 'Galle Face', 'Pettah', 'Fort', 'Bambalapitiya', 'Kollupitiya', 'Wellawatte', 'Dehiwala', 'Mount Lavinia', 'Nugegoda'] },
-            { city: 'Kandy', state: 'Central Province', postalPrefix: '200', streets: ['Dalada Veediya', 'Colombo Street', 'Peradeniya Road', 'Temple of the Tooth', 'Kandy Lake', 'Katugastota Road', 'D.S. Senanayake Veediya', 'King Street', 'Cross Street', 'Rajapihilla Mawatha'] },
-            { city: 'Galle', state: 'Southern Province', postalPrefix: '800', streets: ['Main Street', 'Church Street', 'Lighthouse Street', 'Rampart Street', 'Pedlar Street', 'Leyn Baan Street', 'Hospital Street', 'Wakwella Road', 'Welleda Road', 'Hikkaduwa Road'] },
-            { city: 'Jaffna', state: 'Northern Province', postalPrefix: '400', streets: ['Hospital Road', 'Main Street', 'Kasthuriyar Road', 'Stanley Road', 'Temple Road', 'Kandy Road', 'Point Pedro Road', 'Palaly Road', 'KKS Road', 'Navalar Road'] },
-            { city: 'Negombo', state: 'Western Province', postalPrefix: '115', streets: ['Lewis Place', 'Beach Road', 'Main Street', 'St. Joseph Mawatha', 'St. Sebastian Road', 'Temple Road', 'Porutota Road', 'Kadolkele', 'Daluwakotuwa', 'Kochchikade'] },
-            { city: 'Anuradhapura', state: 'North Central Province', postalPrefix: '500', streets: ['Main Street', 'Maithripala Senanayake Mawatha', 'Bandaranaike Mawatha', 'Wijaya Kumaratunga Mawatha', 'Jayasthilaka Road', 'Sri Maha Bodhi', 'Ruwanwelisaya', 'Mihintale Road', 'Puttalam Road', 'Kandy Road'] },
-            { city: 'Trincomalee', state: 'Eastern Province', postalPrefix: '310', streets: ['Central Road', 'Main Street', 'Dockyard Road', 'Inner Harbour Road', 'Kachcheri Road', 'Nilaveli Road', 'Uppuveli Road', 'Sampur Road', 'Kinniya Road', 'Muttur Road'] },
-            { city: 'Batticaloa', state: 'Eastern Province', postalPrefix: '300', streets: ['Main Street', 'Trinco Road', 'Bar Road', 'Hospital Road', 'Central Road', 'Lake Road', 'Boundary Road', 'Kattankudy', 'Eravur', 'Valaichchenai'] },
-            { city: 'Matara', state: 'Southern Province', postalPrefix: '810', streets: ['Main Street', 'Anagarika Dharmapala Mawatha', 'New Road', 'Station Road', 'Beach Road', 'Uyanwatta', 'Kotuwegoda', 'Weligama Road', 'Akuressa Road', 'Deniyaya Road'] },
-            { city: 'Kurunegala', state: 'North Western Province', postalPrefix: '600', streets: ['Colombo Road', 'Kandy Road', 'Negombo Road', 'Puttalam Road', 'Mihindu Mawatha', 'Bauddhaloka Mawatha', 'St. Anne\'s College', 'Maliyadeva', 'Wehera', 'Ethagala'] }
-        ]
-    },
-    'NP': {
-        name: 'Nepal', flag: '🇳🇵', currency: 'NPR', phoneCode: '+977',
-        cities: [
-            { city: 'Kathmandu', state: 'Bagmati Province', postalPrefix: '44600', streets: ['Durbar Marg', 'New Road', 'Thamel', 'Basantapur', 'Asan', 'Freak Street', 'Kingsway', 'Lazimpat', 'Baluwatar', 'Maharajgunj'] },
-            { city: 'Pokhara', state: 'Gandaki Province', postalPrefix: '33700', streets: ['Lakeside', 'Baidam Road', 'Chipledhunga', 'Prithvi Chowk', 'Sabhagriha Chowk', 'Bagar', 'Amarsingh', 'Birauta', 'Hemja', 'Sarangkot'] },
-            { city: 'Lalitpur', state: 'Bagmati Province', postalPrefix: '44700', streets: ['Patan Durbar Square', 'Mangal Bazar', 'Jhamsikhel', 'Pulchowk', 'Kupondole', 'Lagankhel', 'Sanepa', 'Balkumari', 'Gwarko', 'Satdobato'] },
-            { city: 'Bharatpur', state: 'Bagmati Province', postalPrefix: '44200', streets: ['Narayangarh', 'Main Road', 'Lions Chowk', 'Chaubishkoti', 'Bharatpur Height', 'Kawasoti', 'Shivaghat', 'Sauraha', 'Tandi', 'Ratnanagar'] },
-            { city: 'Biratnagar', state: 'Koshi Province', postalPrefix: '56613', streets: ['Main Road', 'Traffic Chowk', 'Golchowk', 'Rani', 'Dulari', 'Haatkhola', 'Biratnagar Road', 'Bastola', 'Baghjhoda', 'Sisne'] },
-            { city: 'Birgunj', state: 'Madhesh Province', postalPrefix: '44300', streets: ['Ghantaghar', 'Adarsh Nagar', 'Maihi', 'Alau', 'Inaruwa', 'Powerhouse Chowk', 'Chhapkaiya', 'Sirsiya', 'Birta', 'Laxmipur'] },
-            { city: 'Dharan', state: 'Koshi Province', postalPrefix: '56700', streets: ['Bhanu Chowk', 'BP Koirala Chowk', 'Mangalbare', 'Hattisar', 'Pindeshwor', 'Buddha Subba', 'Chhata Chowk', 'Putali Line', 'Tinkune', 'Panbari'] },
-            { city: 'Butwal', state: 'Lumbini Province', postalPrefix: '32907', streets: ['Traffic Chowk', 'Milanchowk', 'Amarpath', 'Golpark', 'Kalikanagar', 'Devdaha', 'Chauraha', 'Jogikuti', 'Belbas', 'Semlar'] },
-            { city: 'Hetauda', state: 'Bagmati Province', postalPrefix: '44107', streets: ['Main Road', 'Chaughada', 'Buddha Chowk', 'Sanopokhara', 'Hetauda Industrial Area', 'Makwanpur', 'Thingan', 'Padampokhari', 'Sivalaya', 'Basantapur'] },
-            { city: 'Janakpur', state: 'Madhesh Province', postalPrefix: '45600', streets: ['Ramanand Chowk', 'Janaki Mandir', 'Station Road', 'Mills Area', 'Bhanu Chowk', 'Kadam Chowk', 'Pidari Chowk', 'Bazar Area', 'Mujeliya', 'Ramauli'] }
-        ]
-    },
-    'MY': {
-        name: 'Malaysia', flag: '🇲🇾', currency: 'MYR', phoneCode: '+60',
-        cities: [
-            { city: 'Kuala Lumpur', state: 'Federal Territory', postalPrefix: '500', streets: ['Jalan Bukit Bintang', 'Jalan Ampang', 'Jalan Sultan Ismail', 'Jalan Tun Razak', 'Jalan Pudu', 'Jalan Hang Tuah', 'Jalan Imbi', 'Jalan Raja Chulan', 'Jalan Conlay', 'Jalan Kia Peng'] },
-            { city: 'George Town', state: 'Penang', postalPrefix: '100', streets: ['Lebuh Chulia', 'Jalan Penang', 'Lebuh Armenian', 'Lebuh Campbell', 'Jalan Masjid Kapitan Keling', 'Lebuh Bishop', 'Lebuh Pantai', 'Jalan Macalister', 'Lebuh Farquhar', 'Jalan Burma'] },
-            { city: 'Ipoh', state: 'Perak', postalPrefix: '300', streets: ['Jalan Sultan Idris Shah', 'Jalan Bandar Timah', 'Jalan Panglima', 'Jalan Bijeh Timah', 'Jalan Market', 'Jalan Sultan Yussuf', 'Jalan Cockman', 'Jalan Theatre', 'Jalan Anderson', 'Jalan Kuala Kangsar'] },
-            { city: 'Shah Alam', state: 'Selangor', postalPrefix: '400', streets: ['Persiaran Kayangan', 'Jalan Tengku Ampuan Zabedah', 'Jalan Dato Sulaiman', 'Persiaran Perbandaran', 'Jalan Plumbum', 'Jalan Rugbi', 'Jalan Rajawali', 'Persiaran Sukan', 'Jalan Kristal', 'Jalan Elektron'] },
-            { city: 'Petaling Jaya', state: 'Selangor', postalPrefix: '473', streets: ['Jalan SS2/24', 'Jalan SS15/4', 'Jalan Universiti', 'Jalan Gasing', 'Jalan Templer', 'Jalan Othman', 'Jalan Yong Shook Lin', 'Jalan Utara', 'Jalan Semangat', 'Jalan Bersatu'] },
-            { city: 'Johor Bahru', state: 'Johor', postalPrefix: '800', streets: ['Jalan Wong Ah Fook', 'Jalan Tun Abdul Razak', 'Jalan Ibrahim', 'Jalan Trus', 'Jalan Dhoby', 'Jalan Segget', 'Jalan Tan Hiok Nee', 'Jalan Dato Sulaiman', 'Jalan Kebun Teh', 'Jalan Larkin'] },
-            { city: 'Malacca City', state: 'Malacca', postalPrefix: '750', streets: ['Jalan Hang Jebat', 'Jalan Tun Tan Cheng Lock', 'Jalan Kota', 'Jalan Merdeka', 'Jalan Bendahara', 'Jalan Bunga Raya', 'Jalan Munshi Abdullah', 'Jalan Gajah Berang', 'Jalan Tengkera', 'Jalan Portugis'] },
-            { city: 'Kota Kinabalu', state: 'Sabah', postalPrefix: '880', streets: ['Jalan Gaya', 'Jalan Tun Fuad Stephens', 'Jalan Pantai', 'Jalan Sinsuran', 'Jalan Bandaran', 'Jalan Haji Saman', 'Jalan Segama', 'Jalan Api-Api', 'Jalan Lintas', 'Jalan Tuaran'] },
-            { city: 'Kuantan', state: 'Pahang', postalPrefix: '250', streets: ['Jalan Mahkota', 'Jalan Besar', 'Jalan Bukit Ubi', 'Jalan Wong Ah Jang', 'Jalan Haji Ahmad', 'Jalan Gambut', 'Jalan Dato Lim Hoe Lek', 'Jalan Teluk Sisek', 'Jalan Penjara', 'Jalan Air Putih'] },
-            { city: 'Kuching', state: 'Sarawak', postalPrefix: '930', streets: ['Jalan Main Bazaar', 'Jalan Carpenter', 'Jalan Padungan', 'Jalan India', 'Jalan Tun Abang Haji Openg', 'Jalan Pearl', 'Jalan Ban Hock', 'Jalan Green Hill', 'Jalan Wayang', 'Jalan Central'] }
-        ]
-    },
-    'ID': {
-        name: 'Indonesia', flag: '🇮🇩', currency: 'IDR', phoneCode: '+62',
-        cities: [
-            { city: 'Jakarta', state: 'DKI Jakarta', postalPrefix: '101', streets: ['Jalan Thamrin', 'Jalan Sudirman', 'Jalan Gatot Subroto', 'Jalan Rasuna Said', 'Jalan Hayam Wuruk', 'Jalan Gajah Mada', 'Jalan Mangga Besar', 'Jalan Fatmawati', 'Jalan Cikini Raya', 'Jalan Sabang'] },
-            { city: 'Surabaya', state: 'East Java', postalPrefix: '601', streets: ['Jalan Tunjungan', 'Jalan Basuki Rahmat', 'Jalan Darmo', 'Jalan Diponegoro', 'Jalan Pemuda', 'Jalan Gubeng', 'Jalan Raya Darmo', 'Jalan Urip Sumoharjo', 'Jalan Mayjen Sungkono', 'Jalan Ahmad Yani'] },
-            { city: 'Bandung', state: 'West Java', postalPrefix: '401', streets: ['Jalan Asia Afrika', 'Jalan Braga', 'Jalan Dago', 'Jalan Riau', 'Jalan Merdeka', 'Jalan Sunda', 'Jalan Cihampelas', 'Jalan Setiabudi', 'Jalan Pasteur', 'Jalan Wastukancana'] },
-            { city: 'Medan', state: 'North Sumatra', postalPrefix: '201', streets: ['Jalan Gatot Subroto', 'Jalan Merdeka', 'Jalan Ahmad Yani', 'Jalan Diponegoro', 'Jalan Sudirman', 'Jalan Thamrin', 'Jalan Imam Bonjol', 'Jalan Pemuda', 'Jalan Sisingamangaraja', 'Jalan Asia'] },
-            { city: 'Semarang', state: 'Central Java', postalPrefix: '501', streets: ['Jalan Pandanaran', 'Jalan Pemuda', 'Jalan Ahmad Yani', 'Jalan Gajah Mada', 'Jalan MT Haryono', 'Jalan Majapahit', 'Jalan Sultan Agung', 'Jalan Simpang Lima', 'Jalan Pahlawan', 'Jalan Sriwijaya'] },
-            { city: 'Makassar', state: 'South Sulawesi', postalPrefix: '901', streets: ['Jalan Somba Opu', 'Jalan Penghibur', 'Jalan Ahmad Yani', 'Jalan Sudirman', 'Jalan Ratulangi', 'Jalan Pettarani', 'Jalan Perintis Kemerdekaan', 'Jalan Urip Sumoharjo', 'Jalan Andi Pangeran Pettarani', 'Jalan Slamet Riyadi'] },
-            { city: 'Palembang', state: 'South Sumatra', postalPrefix: '301', streets: ['Jalan Sudirman', 'Jalan Merdeka', 'Jalan Demang Lebar Daun', 'Jalan Ahmad Yani', 'Jalan Kapten A Rivai', 'Jalan Tasik', 'Jalan Basuki Rahmat', 'Jalan Radial', 'Jalan Kambang Iwak', 'Jalan Sekanak'] },
-            { city: 'Denpasar', state: 'Bali', postalPrefix: '801', streets: ['Jalan Gajah Mada', 'Jalan Teuku Umar', 'Jalan Diponegoro', 'Jalan Sudirman', 'Jalan Hayam Wuruk', 'Jalan Thamrin', 'Jalan Ahmad Yani', 'Jalan Raya Puputan', 'Jalan Gatot Subroto', 'Jalan Kamboja'] },
-            { city: 'Yogyakarta', state: 'Special Region of Yogyakarta', postalPrefix: '551', streets: ['Jalan Malioboro', 'Jalan Solo', 'Jalan Parangtritis', 'Jalan Magelang', 'Jalan Gejayan', 'Jalan Kaliurang', 'Jalan Adisucipto', 'Jalan Godean', 'Jalan Palagan Tentara Pelajar', 'Jalan Prawirotaman'] },
-            { city: 'Padang', state: 'West Sumatra', postalPrefix: '251', streets: ['Jalan Sudirman', 'Jalan Ahmad Yani', 'Jalan Diponegoro', 'Jalan Imam Bonjol', 'Jalan Veteran', 'Jalan Pasar Raya', 'Jalan Haji Agus Salim', 'Jalan Khatib Sulaiman', 'Jalan S Parman', 'Jalan By Pass'] }
-        ]
-    },
-    'PH': {
-        name: 'Philippines', flag: '🇵🇭', currency: 'PHP', phoneCode: '+63',
-        cities: [
-            { city: 'Manila', state: 'Metro Manila', postalPrefix: '1000', streets: ['Roxas Boulevard', 'Ayala Avenue', 'EDSA', 'Ortigas Avenue', 'Shaw Boulevard', 'Makati Avenue', 'Buendia Avenue', 'Quirino Avenue', 'Taft Avenue', 'España Boulevard'] },
-            { city: 'Quezon City', state: 'Metro Manila', postalPrefix: '1100', streets: ['Quezon Avenue', 'Aurora Boulevard', 'Timog Avenue', 'Tomas Morato', 'Katipunan Avenue', 'Commonwealth Avenue', 'Roosevelt Avenue', 'Del Monte Avenue', 'E. Rodriguez Sr. Avenue', 'Mindanao Avenue'] },
-            { city: 'Davao City', state: 'Davao del Sur', postalPrefix: '8000', streets: ['Rizal Street', 'Bonifacio Street', 'Sales Street', 'C.M. Recto Street', 'San Pedro Street', 'Pelayo Street', 'Claveria Street', 'J.P. Laurel Avenue', 'Quimpo Boulevard', 'McArthur Highway'] },
-            { city: 'Cebu City', state: 'Cebu', postalPrefix: '6000', streets: ['Colon Street', 'Osmeña Boulevard', 'Jones Avenue', 'Fuente Osmeña', 'Mango Avenue', 'Escario Street', 'Salinas Drive', 'A.S. Fortuna Street', 'Banilad Road', 'N. Bacalso Avenue'] },
-            { city: 'Zamboanga City', state: 'Zamboanga del Sur', postalPrefix: '7000', streets: ['Rizal Street', 'Mayor Vitaliano Agan Avenue', 'Governor Camins Road', 'MCLL Highway', 'Tomas Claudio Street', 'La Purisima Street', 'Valderosa Street', 'Pablo Lorenzo Street', 'Don Toribio Street', 'Guardian Street'] },
-            { city: 'Cagayan de Oro', state: 'Misamis Oriental', postalPrefix: '9000', streets: ['Corrales Avenue', 'Division Road', 'Don Apolinar Velez Street', 'Rizal Street', 'Velez Street', 'Capistrano Street', 'Aguinaldo Street', 'C.M. Recto Avenue', 'J.R. Borja Street', 'Masterson Avenue'] },
-            { city: 'Iloilo City', state: 'Iloilo', postalPrefix: '5000', streets: ['Calle Real', 'Iznart Street', 'J.M. Basa Street', 'Ledesma Street', 'General Luna Street', 'Dela Rama Street', 'Valeria Street', 'Mabini Street', 'Rizal Street', 'Bonifacio Drive'] },
-            { city: 'Bacolod', state: 'Negros Occidental', postalPrefix: '6100', streets: ['Lacson Street', 'Araneta Street', 'Rizal Street', 'Mabini Street', 'Gatuslao Street', 'San Juan Street', 'Luzuriaga Street', 'Burgos Street', 'Gonzaga Street', 'Libertad Street'] },
-            { city: 'General Santos', state: 'South Cotabato', postalPrefix: '9500', streets: ['Pioneer Avenue', 'Santiago Boulevard', 'J. Catolico Avenue', 'Roxas East Avenue', 'Magsaysay Avenue', 'Osmeña Street', 'Bonifacio Street', 'Rizal Street', 'Quezon Avenue', 'Aparente Street'] },
-            { city: 'Baguio', state: 'Benguet', postalPrefix: '2600', streets: ['Session Road', 'Harrison Road', 'Kennon Road', 'Marcos Highway', 'Naguilian Road', 'Loakan Road', 'Leonard Wood Road', 'BGH Rotunda', 'Magsaysay Avenue', 'Bonifacio Street'] }
-        ]
-    },
-    'VN': {
-        name: 'Vietnam', flag: '🇻🇳', currency: 'VND', phoneCode: '+84',
-        cities: [
-            { city: 'Ho Chi Minh City', state: 'Ho Chi Minh', postalPrefix: '700', streets: ['Nguyen Hue Street', 'Dong Khoi Street', 'Le Loi Street', 'Le Thanh Ton Street', 'Hai Ba Trung Street', 'Ly Tu Trong Street', 'Pasteur Street', 'Nam Ky Khoi Nghia Street', 'Vo Van Kiet Street', 'Ton Duc Thang Street'] },
-            { city: 'Hanoi', state: 'Hanoi', postalPrefix: '100', streets: ['Trang Tien Street', 'Hang Bai Street', 'Hang Dao Street', 'Hang Gai Street', 'Ma May Street', 'Dinh Tien Hoang Street', 'Le Thai To Street', 'Ly Thai To Street', 'Ba Trieu Street', 'Pho Hue Street'] },
-            { city: 'Da Nang', state: 'Da Nang', postalPrefix: '500', streets: ['Bach Dang Street', 'Nguyen Van Linh Street', 'Le Duan Street', 'Tran Phu Street', 'Nguyen Chi Thanh Street', 'Hoang Dieu Street', 'Nguyen Tat Thanh Street', 'Vo Nguyen Giap Street', 'Pham Van Dong Street', 'Ngo Quyen Street'] },
-            { city: 'Can Tho', state: 'Can Tho', postalPrefix: '900', streets: ['Hai Ba Trung Street', 'Nguyen Trai Street', 'Hoa Binh Avenue', 'Tran Hung Dao Street', 'Phan Dinh Phung Street', 'Ly Thai To Street', 'Nguyen Van Cu Street', 'Cach Mang Thang Tam Street', 'Mau Than Street', '3 Thang 2 Street'] },
-            { city: 'Hai Phong', state: 'Hai Phong', postalPrefix: '180', streets: ['Tran Hung Dao Street', 'Lach Tray Street', 'Dien Bien Phu Street', 'Nguyen Duc Canh Street', 'To Hieu Street', 'Le Loi Street', 'Hoang Van Thu Street', 'Dinh Tien Hoang Street', 'Quang Trung Street', 'Nguyen Trai Street'] },
-            { city: 'Bien Hoa', state: 'Dong Nai', postalPrefix: '810', streets: ['Nguyen Ai Quoc Street', 'Vo Thi Sau Street', 'Pham Van Thuan Street', 'Ha Huy Giap Street', 'Nguyen Van Tri Street', 'Bui Huu Nghia Street', 'Dong Khoi Street', 'Nguyen Thi Minh Khai Street', 'Tran Bien Street', 'Le Quy Don Street'] },
-            { city: 'Nha Trang', state: 'Khanh Hoa', postalPrefix: '650', streets: ['Tran Phu Street', 'Nguyen Thien Thuat Street', 'Hung Vuong Street', 'Le Thanh Ton Street', 'Nguyen Trung Truc Street', 'Ly Thanh Ton Street', 'Hoang Hoa Tham Street', 'Biet Thu Street', 'Tran Quang Khai Street', 'Nguyen Thi Minh Khai Street'] },
-            { city: 'Hue', state: 'Thua Thien Hue', postalPrefix: '490', streets: ['Hung Vuong Street', 'Le Loi Street', 'Nguyen Hue Street', 'Tran Hung Dao Street', 'Pham Ngu Lao Street', 'Chu Van An Street', 'Ba Trieu Street', 'Ly Thuong Kiet Street', 'Nguyen Trai Street', 'Ben Nghe Street'] },
-            { city: 'Vung Tau', state: 'Ba Ria-Vung Tau', postalPrefix: '780', streets: ['Tran Hung Dao Street', 'Ba Cu Street', 'Le Loi Street', 'Le Hong Phong Street', 'Nguyen Truong To Street', 'Ly Thuong Kiet Street', 'Hoang Dieu Street', 'Truong Cong Dinh Street', 'Phan Chu Trinh Street', 'Nguyen An Ninh Street'] },
-            { city: 'Quy Nhon', state: 'Binh Dinh', postalPrefix: '550', streets: ['Nguyen Hue Street', 'Tran Hung Dao Street', 'Le Loi Street', 'Ly Thuong Kiet Street', 'Nguyen Tat Thanh Street', 'Le Hong Phong Street', 'Phan Boi Chau Street', 'Nguyen Thai Hoc Street', 'Vo Lai Street', 'Hoang Hoa Tham Street'] }
-        ]
-    },
-    'KR': {
-        name: 'South Korea', flag: '🇰🇷', currency: 'KRW', phoneCode: '+82',
-        cities: [
-            { city: 'Seoul', state: 'Seoul', postalPrefix: '045', streets: ['Gangnam-daero', 'Teheran-ro', 'Myeongdong-gil', 'Jongno', 'Euljiro', 'Cheonggyecheon-ro', 'Sejong-daero', 'Hannam-daero', 'Itaewon-ro', 'Yanghwa-ro'] },
-            { city: 'Busan', state: 'Busan', postalPrefix: '480', streets: ['Haeundae Beach Road', 'Gwangalli Beach Road', 'Seomyeon-ro', 'Jungang-daero', 'Taejong-daero', 'Choryang-ro', 'Nampo-dong', 'Gamcheon-ro', 'Dalmaji-gil', 'Songjeong Beach Road'] },
-            { city: 'Incheon', state: 'Incheon', postalPrefix: '223', streets: ['Incheon Tower-daero', 'Songdo-dong', 'Bupyeong-daero', 'Gyeongin-ro', 'Wolmido-ro', 'Jayu-ro', 'Yeonan-ro', 'Sinpo-ro', 'Chinatown Street', 'Yeongjong-do'] },
-            { city: 'Daegu', state: 'Daegu', postalPrefix: '419', streets: ['Dongseong-ro', 'Jungang-daero', 'Dalgu-bul-ro', 'Myeongdeok-ro', 'Suseong-ro', 'Beomeo-ro', 'Wolbae-ro', 'Sangin-ro', 'Duryu Park Road', 'Gukchaebosang-ro'] },
-            { city: 'Daejeon', state: 'Daejeon', postalPrefix: '341', streets: ['Dunsan-daero', 'Gyerong-ro', 'Jungang-ro', 'Daejeon-ro', 'Hanbat-daero', 'Yuseong-daero', 'Gyeryong-ro', 'Tanbang-ro', 'Seodaejeon-ro', 'Sintanjin-ro'] },
-            { city: 'Gwangju', state: 'Gwangju', postalPrefix: '614', streets: ['Chungjang-ro', 'Geumnam-ro', 'Sangmu-ro', 'Yangnim-ro', 'Dongseong-ro', 'Jukbong-ro', 'Bongseon-ro', 'Pungam-ro', 'Hanam-ro', 'Wolsan-ro'] },
-            { city: 'Suwon', state: 'Gyeonggi', postalPrefix: '162', streets: ['Paldal-ro', 'Gwonseon-ro', 'Yeongtong-ro', 'Jangan-ro', 'Bongyeong-ro', 'Maesan-ro', 'Ingye-ro', 'Gwanggyo-ro', 'Hyowon-ro', 'Deogyeong-daero'] },
-            { city: 'Ulsan', state: 'Ulsan', postalPrefix: '445', streets: ['Taehwa-ro', 'Samsan-ro', 'Sinan-ro', 'Gangnam-ro', 'Bangeo-ro', 'Dal-dong', 'Okgyo-ro', 'Gujeong-ro', 'Jungang-ro', 'Dongsan-ro'] },
-            { city: 'Changwon', state: 'Gyeongsangnam', postalPrefix: '511', streets: ['Woni-daero', 'Sangnam-daero', 'Changwon-daero', 'Jungang-daero', 'Yongho-ro', 'Sapa-ro', 'Myeongseo-ro', 'Happo-daero', 'Masan-ro', 'Jinhae-daero'] },
-            { city: 'Goyang', state: 'Gyeonggi', postalPrefix: '104', streets: ['Chungjang-ro', 'Goyang-daero', 'Wonheung-ro', 'Jungang-ro', 'Baekma-ro', 'Tongil-ro', 'Hwajeong-ro', 'Daehwa-ro', 'Juyeop-ro', 'Jeongbalsan-ro'] }
-        ]
-    },
-    'CN': {
-        name: 'China', flag: '🇨🇳', currency: 'CNY', phoneCode: '+86',
-        cities: [
-            { city: 'Beijing', state: 'Beijing', postalPrefix: '100', streets: ['Chang\'an Avenue', 'Wangfujing Street', 'Qianmen Street', 'Nanluoguxiang', 'Sanlitun Road', 'Jianguomenwai Avenue', 'Dongzhimenwai Street', 'Xidan North Street', 'Jinrong Street', 'Guomao Road'] },
-            { city: 'Shanghai', state: 'Shanghai', postalPrefix: '200', streets: ['Nanjing Road', 'Huaihai Road', 'Zhongshan Road', 'Xizang Road', 'Sichuan Road', 'Fuzhou Road', 'Yan\'an Road', 'Wujiang Road', 'Changle Road', 'Hengshan Road'] },
-            { city: 'Guangzhou', state: 'Guangdong', postalPrefix: '510', streets: ['Beijing Road', 'Zhongshan Road', 'Shangxiajiu Road', 'Tianhe Road', 'Huanshi Road', 'Dongfeng Road', 'Jiefang Road', 'Renmin Road', 'Binjiang Road', 'Linjiang Avenue'] },
-            { city: 'Shenzhen', state: 'Guangdong', postalPrefix: '518', streets: ['Shennan Avenue', 'Binhai Avenue', 'Fuhua Road', 'Huaqiang North Road', 'Dongmen Road', 'Renmin South Road', 'Luohu Commercial City', 'Nanshan Avenue', 'Baishi Road', 'Xiangmihu Road'] },
-            { city: 'Chongqing', state: 'Chongqing', postalPrefix: '400', streets: ['Jiefangbei', 'Nanping Road', 'Guanyinqiao', 'Yangjiaping', 'Shapingba', 'Ciqikou', 'Chaotianmen', 'Hongyadong', 'Jiangbei Road', 'Rongqiao Road'] },
-            { city: 'Tianjin', state: 'Tianjin', postalPrefix: '300', streets: ['Heping Road', 'Binjiang Road', 'Nanjing Road', 'Jiefang Road', 'Quanyechang', 'Ancient Culture Street', 'Fifth Avenue', 'Machang Road', 'Youyi Road', 'Weijin Road'] },
-            { city: 'Chengdu', state: 'Sichuan', postalPrefix: '610', streets: ['Chunxi Road', 'Taikoo Li', 'Kuanzhai Alley', 'Jinli Street', 'Wuhouci Street', 'Renmin Road', 'Tianfu Square', 'Jianshe Road', 'Jinjiang Road', 'Shuhan Road'] },
-            { city: 'Hangzhou', state: 'Zhejiang', postalPrefix: '310', streets: ['West Lake Avenue', 'Hubin Road', 'Nanshan Road', 'Yan\'an Road', 'Qingchun Road', 'Wulin Road', 'Zhongshan Road', 'Jiefang Road', 'Tiyuchang Road', 'Fengqi Road'] },
-            { city: 'Wuhan', state: 'Hubei', postalPrefix: '430', streets: ['Zhongshan Avenue', 'Jianghan Road', 'Wuluo Road', 'Jiefang Avenue', 'Youyi Avenue', 'Hangkong Road', 'Xudong Avenue', 'Zhongbei Road', 'Luoyu Road', 'Guanggu Avenue'] },
-            { city: 'Nanjing', state: 'Jiangsu', postalPrefix: '210', streets: ['Zhongshan Road', 'Hanzhong Road', 'Xinjiekou', 'Confucius Temple', 'Xuanwu Road', 'Longpan Road', 'Zhonghua Road', 'Taiping Road', 'Zhongyang Road', 'Jiangning Road'] }
-        ]
-    },
-    'IN': {
-        name: 'India', flag: '🇮🇳', currency: 'INR', phoneCode: '+91',
-        cities: [
-            { city: 'Mumbai', state: 'Maharashtra', postalPrefix: '400', streets: ['Marine Drive', 'Colaba Causeway', 'Linking Road', 'Carter Road', 'Hill Road', 'SV Road', 'MG Road', 'Lamington Road', 'Mohammad Ali Road', 'Charni Road'] },
-            { city: 'Delhi', state: 'Delhi', postalPrefix: '110', streets: ['Connaught Place', 'Chandni Chowk', 'Rajpath', 'Karol Bagh', 'Lajpat Nagar', 'Hauz Khas', 'Saket', 'Janpath', 'Nehru Place', 'Dwarka'] },
-            { city: 'Bangalore', state: 'Karnataka', postalPrefix: '560', streets: ['MG Road', 'Brigade Road', 'Church Street', 'Commercial Street', 'Koramangala', 'Indiranagar', 'Jayanagar', 'Whitefield', 'Electronic City', 'Marathahalli'] },
-            { city: 'Hyderabad', state: 'Telangana', postalPrefix: '500', streets: ['Charminar Road', 'Banjara Hills', 'Jubilee Hills', 'Hitec City', 'Gachibowli', 'Madhapur', 'Begumpet', 'Secunderabad', 'Abids', 'Ameerpet'] },
-            { city: 'Ahmedabad', state: 'Gujarat', postalPrefix: '380', streets: ['CG Road', 'Ashram Road', 'SG Highway', 'Relief Road', 'Maninagar', 'Bopal', 'Satellite', 'Vastrapur', 'Navrangpura', 'Paldi'] },
-            { city: 'Chennai', state: 'Tamil Nadu', postalPrefix: '600', streets: ['Anna Salai', 'Marina Beach Road', 'T Nagar', 'Nungambakkam', 'Adyar', 'Mylapore', 'Velachery', 'OMR', 'ECR', 'Poonamallee High Road'] },
-            { city: 'Kolkata', state: 'West Bengal', postalPrefix: '700', streets: ['Park Street', 'Howrah Bridge', 'Salt Lake', 'New Town', 'Esplanade', 'BBD Bagh', 'Gariahat', 'Shyambazar', 'Ballygunge', 'Chowringhee'] },
-            { city: 'Surat', state: 'Gujarat', postalPrefix: '395', streets: ['Ring Road', 'Athwa Lines', 'Vesu', 'Piplod', 'Adajan', 'Katargam', 'Varachha', 'Udhna', 'Rander', 'Dumas Road'] },
-            { city: 'Pune', state: 'Maharashtra', postalPrefix: '411', streets: ['MG Road', 'FC Road', 'JM Road', 'Laxmi Road', 'Koregaon Park', 'Baner', 'Aundh', 'Hinjewadi', 'Kothrud', 'Viman Nagar'] },
-            { city: 'Jaipur', state: 'Rajasthan', postalPrefix: '302', streets: ['MI Road', 'Pink City', 'Hawa Mahal Road', 'Johari Bazaar', 'Bapu Bazaar', 'Amer Road', 'Tonk Road', 'Ajmer Road', 'JLN Marg', 'Sikar Road'] }
-        ]
-    },
-    'BR': {
-        name: 'Brazil', flag: '🇧🇷', currency: 'BRL', phoneCode: '+55',
-        cities: [
-            { city: 'São Paulo', state: 'São Paulo', postalPrefix: '010', streets: ['Avenida Paulista', 'Rua Augusta', 'Avenida Faria Lima', 'Rua Oscar Freire', 'Avenida Brigadeiro Faria Lima', 'Rua da Consolação', 'Avenida Ipiranga', 'Avenida São João', 'Rua 25 de Março', 'Avenida Rebouças'] },
-            { city: 'Rio de Janeiro', state: 'Rio de Janeiro', postalPrefix: '200', streets: ['Avenida Atlântica', 'Avenida Copacabana', 'Rua Farme de Amoedo', 'Avenida Vieira Souto', 'Rua Visconde de Pirajá', 'Avenida Nossa Senhora de Copacabana', 'Rua Barata Ribeiro', 'Avenida Rio Branco', 'Rua da Assembleia', 'Avenida Presidente Vargas'] },
-            { city: 'Brasília', state: 'Distrito Federal', postalPrefix: '700', streets: ['Eixo Monumental', 'Esplanada dos Ministérios', 'Avenida W3', 'Avenida L2 Sul', 'Avenida das Nações', 'SQS 308', 'CLS 405', 'SCS Quadra 2', 'Setor Comercial Sul', 'Setor Hoteleiro Norte'] },
-            { city: 'Salvador', state: 'Bahia', postalPrefix: '400', streets: ['Avenida Sete de Setembro', 'Rua Chile', 'Pelourinho', 'Avenida Oceânica', 'Avenida Tancredo Neves', 'Avenida ACM', 'Rua da Paciência', 'Avenida Centenário', 'Avenida Vasco da Gama', 'Largo do Campo Grande'] },
-            { city: 'Fortaleza', state: 'Ceará', postalPrefix: '600', streets: ['Avenida Beira Mar', 'Avenida Santos Dumont', 'Avenida Dom Luís', 'Avenida Washington Soares', 'Rua Barão de Studart', 'Avenida Desembargador Moreira', 'Avenida Antônio Sales', 'Rua Silva Jatahy', 'Avenida da Universidade', 'Avenida Carapinima'] },
-            { city: 'Belo Horizonte', state: 'Minas Gerais', postalPrefix: '300', streets: ['Avenida Afonso Pena', 'Avenida Amazonas', 'Avenida do Contorno', 'Rua da Bahia', 'Avenida Cristiano Machado', 'Avenida Nossa Senhora do Carmo', 'Rua Sapucaí', 'Avenida Getúlio Vargas', 'Praça Sete', 'Mercado Central'] },
-            { city: 'Manaus', state: 'Amazonas', postalPrefix: '690', streets: ['Avenida Eduardo Ribeiro', 'Avenida Getúlio Vargas', 'Avenida Sete de Setembro', 'Avenida Djalma Batista', 'Avenida Constantino Nery', 'Avenida Torquato Tapajós', 'Avenida Autaz Mirim', 'Avenida Ephigênio Salles', 'Rua Recife', 'Avenida André Araújo'] },
-            { city: 'Curitiba', state: 'Paraná', postalPrefix: '800', streets: ['Rua XV de Novembro', 'Avenida Batel', 'Avenida Sete de Setembro', 'Rua Comendador Araújo', 'Avenida Manoel Ribas', 'Avenida República Argentina', 'Rua Trajano Reis', 'Avenida Iguaçu', 'Rua Itupava', 'Avenida Victor Ferreira do Amaral'] },
-            { city: 'Recife', state: 'Pernambuco', postalPrefix: '500', streets: ['Avenida Boa Viagem', 'Rua da Aurora', 'Avenida Conde da Boa Vista', 'Rua do Bom Jesus', 'Avenida Guararapes', 'Avenida Agamenon Magalhães', 'Rua do Sol', 'Avenida Caxangá', 'Rua da Concórdia', 'Avenida Mascarenhas de Moraes'] },
-            { city: 'Porto Alegre', state: 'Rio Grande do Sul', postalPrefix: '900', streets: ['Avenida Ipiranga', 'Avenida Borges de Medeiros', 'Rua dos Andradas', 'Avenida Farrapos', 'Avenida Assis Brasil', 'Avenida Protásio Alves', 'Avenida Bento Gonçalves', 'Rua Padre Chagas', 'Avenida Carlos Gomes', 'Avenida João Pessoa'] }
-        ]
-    },
-    'RU': {
-        name: 'Russia', flag: '🇷🇺', currency: 'RUB', phoneCode: '+7',
-        cities: [
-            { city: 'Moscow', state: 'Moscow', postalPrefix: '101', streets: ['Tverskaya Street', 'Arbat Street', 'Nevsky Prospekt', 'Red Square', 'Lubyanka Square', 'Pushkinskaya Street', 'Garden Ring', 'Kutuzovsky Prospekt', 'Leninsky Prospekt', 'Komsomolsky Prospekt'] },
-            { city: 'Saint Petersburg', state: 'Saint Petersburg', postalPrefix: '190', streets: ['Nevsky Prospekt', 'Palace Square', 'Liteyny Prospekt', 'Sadovaya Street', 'Griboyedov Canal', 'Moscow Prospekt', 'Vosstaniya Street', 'Riverside Embankment', 'Kazan Street', 'Italyanskaya Street'] },
-            { city: 'Novosibirsk', state: 'Novosibirsk Oblast', postalPrefix: '630', streets: ['Krasny Prospekt', 'Lenina Street', 'Karla Marksa Avenue', 'Sovetskaya Street', 'Gogolya Street', 'Kirova Street', 'Frunze Street', 'Dimitrova Prospekt', 'Vatutina Street', 'Timiryazeva Street'] },
-            { city: 'Yekaterinburg', state: 'Sverdlovsk Oblast', postalPrefix: '620', streets: ['Lenina Avenue', 'Mira Street', 'Malysheva Street', 'Lutskaya Street', 'Kuybysheva Street', '8 Marta Street', 'Pushkina Street', 'Vaynera Street', 'Radishcheva Street', 'Belinskogo Street'] },
-            { city: 'Kazan', state: 'Republic of Tatarstan', postalPrefix: '420', streets: ['Bauman Street', 'Kremlyovskaya Street', 'Peterburgskaya Street', 'Pushkina Street', 'Dostoevskogo Street', 'Butlerova Street', 'Ostrovskogo Street', 'Gorkogo Street', 'Mushtari Street', 'Chistopolskaya Street'] },
-            { city: 'Nizhny Novgorod', state: 'Nizhny Novgorod Oblast', postalPrefix: '603', streets: ['Bolshaya Pokrovskaya Street', 'Rozhdestvenskaya Street', 'Varvarskaya Street', 'Minina Street', 'Pozharskogo Street', 'Alexeevskaya Street', 'Gorkogo Street', 'Belinskogo Street', 'Kovrovskaya Street', 'Oktyabrskaya Street'] },
-            { city: 'Chelyabinsk', state: 'Chelyabinsk Oblast', postalPrefix: '454', streets: ['Kirova Street', 'Lenina Prospekt', 'Sverdlovsky Prospekt', 'Kommuny Street', 'Truda Street', 'Mira Street', 'Molodogvardeytsev Street', 'Pobedy Prospekt', 'Kashirinykh Street', 'Voroshilova Street'] },
-            { city: 'Omsk', state: 'Omsk Oblast', postalPrefix: '644', streets: ['Lenina Street', 'Marksa Prospekt', 'Mira Prospekt', 'Karl Marks Avenue', 'Zheleznodorozhnaya Street', 'Internatsionalnaya Street', 'Krasny Put Street', 'Lermontova Street', 'Chkalova Street', 'Bogdana Khmelnitskogo Street'] },
-            { city: 'Samara', state: 'Samara Oblast', postalPrefix: '443', streets: ['Kuybysheva Street', 'Lenina Street', 'Novo-Sadovaya Street', 'Moskovskoye Shosse', 'Pobedy Street', 'Stara-Zagora Street', 'Revolyutsionnaya Street', 'Frunze Street', 'Chapaevskaya Street', 'Sadovaya Street'] },
-            { city: 'Rostov-on-Don', state: 'Rostov Oblast', postalPrefix: '344', streets: ['Bolshaya Sadovaya Street', 'Voroshilovsky Prospekt', 'Budennovsky Prospekt', 'Pushkinskaya Street', 'Krasnoarmeyskaya Street', 'Sokolova Prospekt', 'Stachki Prospekt', 'Nagibina Prospekt', 'Tekucheva Street', 'M. Gorkogo Street'] }
-        ]
-    },
-    'ZA': {
-        name: 'South Africa', flag: '🇿🇦', currency: 'ZAR', phoneCode: '+27',
-        cities: [
-            { city: 'Johannesburg', state: 'Gauteng', postalPrefix: '200', streets: ['Eloff Street', 'Commissioner Street', 'Jeppe Street', 'Bree Street', 'Pritchard Street', 'Rissik Street', 'Smit Street', 'Market Street', 'Main Street', 'Oxford Road'] },
-            { city: 'Cape Town', state: 'Western Cape', postalPrefix: '800', streets: ['Long Street', 'Adderley Street', 'Strand Street', 'Bree Street', 'Kloof Street', 'Loop Street', 'Wale Street', 'Church Street', 'Darling Street', 'Main Road'] },
-            { city: 'Durban', state: 'KwaZulu-Natal', postalPrefix: '400', streets: ['Florida Road', 'West Street', 'Smith Street', 'Anton Lembede Street', 'Dr Pixley KaSeme Street', 'Albert Street', 'Margaret Mncadi Avenue', 'Victoria Street', 'Point Road', 'Berea Road'] },
-            { city: 'Pretoria', state: 'Gauteng', postalPrefix: '000', streets: ['Church Street', 'Paul Kruger Street', 'Schoeman Street', 'Pretorius Street', 'Stanley Street', 'Visagie Street', 'Francis Baard Street', 'Madiba Street', 'Lynnwood Road', 'Hatfield'] },
-            { city: 'Port Elizabeth', state: 'Eastern Cape', postalPrefix: '600', streets: ['Govan Mbeki Avenue', 'Main Road', 'Cape Road', 'Rink Street', 'Bird Street', 'Russell Road', 'Mount Road', 'Perridgevale', 'Newton Park', 'Walmer'] },
-            { city: 'Bloemfontein', state: 'Free State', postalPrefix: '930', streets: ['Church Street', 'Nelson Mandela Drive', 'Maitland Street', 'Union Avenue', 'Zastron Street', 'Aliwal Street', 'St George Street', 'Henry Street', 'Kellner Street', 'Bloem Plaza'] },
-            { city: 'East London', state: 'Eastern Cape', postalPrefix: '520', streets: ['Oxford Street', 'Union Street', 'Cambridge Street', 'Fleet Street', 'Terminus Street', 'Buffalo Street', 'Essex Street', 'Currie Street', 'Pearce Street', 'Strand Street'] },
-            { city: 'Pietermaritzburg', state: 'KwaZulu-Natal', postalPrefix: '320', streets: ['Church Street', 'Longmarket Street', 'Commercial Road', 'Burger Street', 'Boshoff Street', 'Victoria Road', 'Greyling Street', 'Chapel Street', 'Pietermaritz Street', 'College Road'] },
-            { city: 'Polokwane', state: 'Limpopo', postalPrefix: '069', streets: ['Landdros Mare Street', 'Grober Street', 'Hans van Rensburg Street', 'Market Street', 'Church Street', 'Rissik Street', 'Bok Street', 'Vorster Street', 'Nelson Mandela Drive', 'Webster Street'] },
-            { city: 'Kimberley', state: 'Northern Cape', postalPrefix: '830', streets: ['Dutoitspan Road', 'Main Road', 'Church Street', 'Jones Street', 'Chapel Street', 'Bultfontein Road', 'Phakamile Mabija Road', 'Oliver Road', 'Memorial Road', 'Jan Smuts Boulevard'] }
-        ]
-    },
-    'NL': {
-        name: 'Netherlands', flag: '🇳🇱', currency: 'EUR', phoneCode: '+31',
-        cities: [
-            { city: 'Amsterdam', state: 'North Holland', postalPrefix: '1011', streets: ['Damrak', 'Kalverstraat', 'Leidsestraat', 'Rokin', 'Prinsengracht', 'Herengracht', 'Keizersgracht', 'Singel', 'Nieuwendijk', 'Utrechtsestraat'] },
-            { city: 'Rotterdam', state: 'South Holland', postalPrefix: '3011', streets: ['Coolsingel', 'Lijnbaan', 'Meent', 'Beursplein', 'Westblaak', 'Nieuwe Binnenweg', 'Witte de Withstraat', 'Mariniersweg', 'Schiedamsedijk', 'Blaak'] },
-            { city: 'The Hague', state: 'South Holland', postalPrefix: '2511', streets: ['Spui', 'Grote Marktstraat', 'Plein', 'Lange Voorhout', 'Kneuterdijk', 'Noordeinde', 'Denneweg', 'Frederikstraat', 'Torenstraat', 'Buitenhof'] },
-            { city: 'Utrecht', state: 'Utrecht', postalPrefix: '3511', streets: ['Oudegracht', 'Neude', 'Lange Viestraat', 'Vredenburg', 'Steenweg', 'Choorstraat', 'Lijnmarkt', 'Zadelstraat', 'Voorstraat', 'Nieuwegracht'] },
-            { city: 'Eindhoven', state: 'North Brabant', postalPrefix: '5611', streets: ['Stratumseind', 'Rechtestraat', 'Demer', 'Vestdijk', 'Kleine Berg', 'Grote Berg', 'Hooghuisstraat', 'Wilhelminaplein', 'Markt', 'Nieuwstraat'] },
-            { city: 'Groningen', state: 'Groningen', postalPrefix: '9711', streets: ['Grote Markt', 'Vismarkt', 'Herestraat', 'Oude Ebbingestraat', 'Folkingestraat', 'Astraat', 'Poelestraat', 'Peperstraat', 'Guldenstraat', 'Zwanestraat'] },
-            { city: 'Tilburg', state: 'North Brabant', postalPrefix: '5038', streets: ['Heuvelstraat', 'Piusplein', 'Stadhuisplein', 'Schouwburgring', 'Westermarkt', 'Spoorlaan', 'Korte Heuvel', 'Mauritsstraat', 'Bisschop Zwijsenstraat', 'Wilhelminapark'] },
-            { city: 'Almere', state: 'Flevoland', postalPrefix: '1315', streets: ['Stadhuisplein', 'Grote Markt', 'Hospitaaldreef', 'Noordeind', 'Buitenplein', 'Cinema Boulevard', 'Forum', 'Esplanade', 'Wijnhaven', 'Marktgracht'] },
-            { city: 'Breda', state: 'North Brabant', postalPrefix: '4811', streets: ['Grote Markt', 'Eindstraat', 'Havermarkt', 'Catharinastraat', 'Halstraat', 'Vlaszak', 'Nieuwe Huizen', 'Torenstraat', 'Kerkstraat', 'Ginnekenstraat'] },
-            { city: 'Nijmegen', state: 'Gelderland', postalPrefix: '6511', streets: ['Grote Markt', 'Lange Hezelstraat', 'Burchtstraat', 'Houtstraat', 'Plein 1944', 'Bloemerstraat', 'Broerstraat', 'Molenstraat', 'Van Broeckhuysenstraat', 'St. Annastraat'] }
-        ]
-    },
-    'BE': {
-        name: 'Belgium', flag: '🇧🇪', currency: 'EUR', phoneCode: '+32',
-        cities: [
-            { city: 'Brussels', state: 'Brussels-Capital Region', postalPrefix: '1000', streets: ['Rue Neuve', 'Avenue Louise', 'Rue de la Loi', 'Boulevard Anspach', 'Rue Antoine Dansaert', 'Grand Place', 'Rue du Marché aux Herbes', 'Avenue de la Toison d\'Or', 'Rue Royale', 'Chaussée d\'Ixelles'] },
-            { city: 'Antwerp', state: 'Flanders', postalPrefix: '2000', streets: ['Meir', 'Groenplaats', 'Nationalestraat', 'Kammenstraat', 'Hoogstraat', 'De Keyserlei', 'Frankrijklei', 'Amerikalei', 'Koningin Astridplein', 'Lange Koepoortstraat'] },
-            { city: 'Ghent', state: 'Flanders', postalPrefix: '9000', streets: ['Veldstraat', 'Korenmarkt', 'Korenlei', 'Graslei', 'Langemunt', 'Vrijdagmarkt', 'Sint-Pietersnieuwstraat', 'Belfortstraat', 'Kouter', 'Woodrow Wilsonplein'] },
-            { city: 'Charleroi', state: 'Wallonia', postalPrefix: '6000', streets: ['Boulevard Tirou', 'Rue de la Montagne', 'Boulevard Joseph II', 'Place Charles II', 'Rue de Dampremy', 'Boulevard Audent', 'Avenue de la Gare', 'Boulevard Defontaine', 'Rue du Grand Central', 'Place de la Digue'] },
-            { city: 'Liège', state: 'Wallonia', postalPrefix: '4000', streets: ['Rue Saint-Léonard', 'Boulevard d\'Avroy', 'Place Saint-Lambert', 'Rue Pont d\'Avroy', 'Boulevard de la Sauvenière', 'Féronstrée', 'Rue Léopold', 'Boulevard Frère Orban', 'Rue Vinâve d\'Île', 'Place du Marché'] },
-            { city: 'Bruges', state: 'Flanders', postalPrefix: '8000', streets: ['Markt', 'Burg', 'Steenstraat', 'Zuidzandstraat', 'Noordzandstraat', 'Langestraat', 'Wollestraat', 'Vlamingstraat', 'Smedenstraat', 'Geldmuntstraat'] },
-            { city: 'Namur', state: 'Wallonia', postalPrefix: '5000', streets: ['Rue de Fer', 'Rue de l\'Ange', 'Place d\'Armes', 'Rue Saint-Jacques', 'Rue du Pont', 'Boulevard Ad Aquam', 'Avenue de Stassart', 'Rue de Bruxelles', 'Rue des Brasseurs', 'Place du Marché aux Légumes'] },
-            { city: 'Leuven', state: 'Flanders', postalPrefix: '3000', streets: ['Bondgenotenlaan', 'Diestsestraat', 'Mechelsestraat', 'Naamsestraat', 'Brusselsestraat', 'Tiensestraat', 'Oude Markt', 'Grote Markt', 'Parijsstraat', 'Vismarkt'] },
-            { city: 'Mons', state: 'Wallonia', postalPrefix: '7000', streets: ['Grand Place', 'Rue de Nimy', 'Rue de la Chaussée', 'Rue d\'Havré', 'Place du Parc', 'Boulevard Dolez', 'Rue de Bertaimont', 'Rue Cronque', 'Rue de la Coupe', 'Rue des Fripiers'] },
-            { city: 'Aalst', state: 'Flanders', postalPrefix: '9300', streets: ['Grote Markt', 'Nieuwstraat', 'Kattestraat', 'Molenstraat', 'Pontstraat', 'Vrijheidstraat', 'Hopmarkt', 'Esplanadeplein', 'Bredestraat', 'Albert Liénartstraat'] }
-        ]
-    },
-    'MX': {
-        name: 'Mexico', flag: '🇲🇽', currency: 'MXN', phoneCode: '+52',
-        cities: [
-            { city: 'Mexico City', state: 'Mexico City', postalPrefix: '060', streets: ['Paseo de la Reforma', 'Avenida Insurgentes', 'Avenida Juárez', 'Calle Madero', 'Avenida Chapultepec', 'Avenida Revolución', 'Avenida Tlalpan', 'Calzada de Tlalpan', 'Avenida Universidad', 'Avenida Constituyentes'] },
-            { city: 'Guadalajara', state: 'Jalisco', postalPrefix: '441', streets: ['Avenida Chapultepec', 'Avenida Juárez', 'Avenida Vallarta', 'Avenida López Mateos', 'Calle Morelos', 'Calle Colón', 'Avenida Hidalgo', 'Avenida 16 de Septiembre', 'Avenida Américas', 'Calzada Independencia'] },
-            { city: 'Monterrey', state: 'Nuevo León', postalPrefix: '640', streets: ['Avenida Constitución', 'Avenida Madero', 'Avenida Padre Mier', 'Avenida Morelos', 'Avenida Zaragoza', 'Avenida Juárez', 'Avenida Colón', 'Avenida Garza Sada', 'Avenida Gonzalitos', 'Avenida Lincoln'] },
-            { city: 'Puebla', state: 'Puebla', postalPrefix: '720', streets: ['Avenida Juárez', 'Boulevard Héroes del 5 de Mayo', 'Avenida Reforma', 'Calle 16 de Septiembre', 'Avenida Juan de Palafox', 'Avenida 14 Oriente', 'Avenida Zaragoza', 'Avenida Cuauhtémoc', 'Avenida Independencia', 'Avenida Reforma'] },
-            { city: 'Toluca', state: 'State of Mexico', postalPrefix: '500', streets: ['Avenida Independencia', 'Avenida Juárez', 'Avenida Hidalgo', 'Avenida Morelos', 'Avenida Lerdo', 'Avenida Constituyentes', 'Avenida Paseo Tollocan', 'Avenida Alfredo del Mazo', 'Avenida Las Torres', 'Avenida Solidaridad'] },
-            { city: 'Tijuana', state: 'Baja California', postalPrefix: '220', streets: ['Avenida Revolución', 'Boulevard Agua Caliente', 'Paseo de los Héroes', 'Avenida Constitución', 'Boulevard Sánchez Taboada', 'Avenida Juárez', 'Boulevard Díaz Ordaz', 'Avenida Madero', 'Boulevard Insurgentes', 'Avenida Negrete'] },
-            { city: 'León', state: 'Guanajuato', postalPrefix: '370', streets: ['Boulevard Adolfo López Mateos', 'Avenida Madero', 'Avenida Juárez', 'Boulevard Campestre', 'Avenida Hidalgo', 'Avenida Independencia', 'Boulevard Juan Alonso de Torres', 'Avenida Las Torres', 'Avenida de los Insurgentes', 'Boulevard Hermanos Aldama'] },
-            { city: 'Ciudad Juárez', state: 'Chihuahua', postalPrefix: '320', streets: ['Avenida Juárez', 'Avenida 16 de Septiembre', 'Avenida Lincoln', 'Boulevard Cuauhtémoc', 'Avenida Tecnológico', 'Avenida Insurgentes', 'Boulevard Zaragoza', 'Avenida Vicente Guerrero', 'Boulevard Independencia', 'Avenida De las Torres'] },
-            { city: 'Zapopan', state: 'Jalisco', postalPrefix: '450', streets: ['Avenida Vallarta', 'Avenida Américas', 'Avenida Patria', 'Avenida Guadalupe', 'Avenida López Mateos', 'Avenida Juan Gil Preciado', 'Avenida Tesistán', 'Avenida Santa Margarita', 'Boulevard Puerta de Hierro', 'Avenida Acueducto'] },
-            { city: 'Mérida', state: 'Yucatán', postalPrefix: '970', streets: ['Paseo de Montejo', 'Calle 60', 'Calle 65', 'Avenida Itzaes', 'Avenida Colón', 'Calle 21', 'Avenida Reforma', 'Calle 47', 'Avenida Pérez Ponce', 'Calle 20'] }
-        ]
-    },
-    'AR': {
-        name: 'Argentina', flag: '🇦🇷', currency: 'ARS', phoneCode: '+54',
-        cities: [
-            { city: 'Buenos Aires', state: 'Buenos Aires', postalPrefix: '1000', streets: ['Avenida 9 de Julio', 'Avenida Corrientes', 'Avenida Santa Fe', 'Avenida Callao', 'Avenida Rivadavia', 'Avenida de Mayo', 'Avenida Belgrano', 'Avenida Córdoba', 'Avenida Libertador', 'Florida'] },
-            { city: 'Córdoba', state: 'Córdoba', postalPrefix: '5000', streets: ['Avenida Colón', 'Avenida San Martín', 'Avenida Vélez Sarsfield', 'Avenida General Paz', 'Boulevard Chacabuco', 'Avenida Figueroa Alcorta', 'Avenida Hipólito Yrigoyen', 'Avenida Rafael Núñez', 'Avenida Cruz Roja', 'Avenida Poeta Lugones'] },
-            { city: 'Rosario', state: 'Santa Fe', postalPrefix: '2000', streets: ['Córdoba', 'Avenida Pellegrini', 'Boulevard Oroño', 'Avenida Rivadavia', 'Calle San Luis', 'Calle Santa Fe', 'Boulevard 27 de Febrero', 'Avenida Francia', 'Avenida Belgrano', 'Calle Mitre'] },
-            { city: 'Mendoza', state: 'Mendoza', postalPrefix: '5500', streets: ['Avenida San Martín', 'Avenida Las Heras', 'Avenida Colón', 'Avenida Aristides Villanueva', 'Calle Sarmiento', 'Calle Mitre', 'Boulevard Chacabuco', 'Avenida España', 'Avenida Belgrano', 'Calle Rivadavia'] },
-            { city: 'San Miguel de Tucumán', state: 'Tucumán', postalPrefix: '4000', streets: ['Calle 25 de Mayo', 'Calle San Martín', 'Avenida Mate de Luna', 'Avenida Aconquija', 'Avenida Sarmiento', 'Calle Rivadavia', 'Avenida Belgrano', 'Avenida Mitre', 'Calle Buenos Aires', 'Avenida Independencia'] },
-            { city: 'La Plata', state: 'Buenos Aires', postalPrefix: '1900', streets: ['Avenida 7', 'Avenida 51', 'Calle 12', 'Calle 8', 'Avenida 60', 'Calle 50', 'Avenida 1', 'Calle 47', 'Avenida 13', 'Calle 6'] },
-            { city: 'Mar del Plata', state: 'Buenos Aires', postalPrefix: '7600', streets: ['Avenida Luro', 'Boulevard Marítimo', 'Avenida Colón', 'Calle San Martín', 'Avenida Independencia', 'Avenida Constitución', 'Calle Rivadavia', 'Avenida Juan B. Justo', 'Calle Belgrano', 'Avenida Champagnat'] },
-            { city: 'Salta', state: 'Salta', postalPrefix: '4400', streets: ['Avenida San Martín', 'Calle Mitre', 'Calle Caseros', 'Avenida Belgrano', 'Calle Zuviría', 'Avenida Bicentenario', 'Calle Buenos Aires', 'Avenida Entre Ríos', 'Calle Alvarado', 'Avenida Paraguay'] },
-            { city: 'Santa Fe', state: 'Santa Fe', postalPrefix: '3000', streets: ['Boulevard Pellegrini', 'Avenida San Martín', 'Calle Rivadavia', 'Boulevard Gálvez', 'Avenida Freyre', 'Calle Mitre', 'Boulevard Oroño', 'Avenida Alem', 'Calle Urquiza', 'Avenida López y Planes'] },
-            { city: 'San Juan', state: 'San Juan', postalPrefix: '5400', streets: ['Avenida José Ignacio de la Roza', 'Avenida Libertador', 'Calle Mitre', 'Avenida Rawson', 'Calle Rivadavia', 'Avenida España', 'Calle Sarmiento', 'Avenida Córdoba', 'Calle Mendoza', 'Avenida Circunvalación'] }
-        ]
-    }
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const rint=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+
+function postal(c,p){
+ if(c==='US')return p+rint(10,99);
+ if(c==='UK'){const l='ABDEFGHJLNPQRSTUWXYZ';return p+rint(1,9)+l[rint(0,19)]+' '+rint(1,9)+l[rint(0,19)]+l[rint(0,19)]}
+ if(c==='CA'){const l='ABCEGHJKLMNPRSTVXY';return p+rint(0,9)+l[rint(0,19)]+' '+rint(0,9)+l[rint(0,19)]+rint(0,9)}
+ return p+rint(0,999).toString().padStart(3,'0');
+}
+
+function phone(pc,c){
+ if(c==='US'||c==='CA')return pc+rint(200,999)+rint(200,999)+rint(1000,9999);
+ if(c==='UK')return pc+'7'+rint(100,999)+rint(100000,999999);
+ if(c==='AU')return pc+'4'+rint(10000000,99999999);
+ if(c==='MM')return pc+'9'+rint(200000000,999999999);
+ if(c==='TH')return pc+rint(80,99)+rint(1000000,9999999);
+ if(c==='SG')return pc+rint(8000,9999)+rint(1000,9999);
+ if(c==='DE')return pc+rint(150,179)+rint(1000000,9999999);
+ if(c==='FR')return pc+'6'+rint(10000000,99999999);
+ if(c==='JP')return pc+rint(70,90)+rint(10000000,99999999);
+ if(c==='KR')return pc+'10'+rint(10000000,99999999);
+ if(c==='CN')return pc+'1'+rint(3000000000,9999999999);
+ if(c==='IN')return pc+'9'+rint(1000000000,9999999999);
+ return pc+rint(100000000,999999999);
+}
+
+function name(c){
+ const N={'US':[['James','John','Robert','Michael','William','Mary','Patricia','Jennifer','Linda','Elizabeth'],['Smith','Johnson','Williams','Brown','Jones','Garcia','Miller','Davis','Rodriguez','Martinez']],'UK':[['Oliver','Olivia','George','Amelia','Harry','Isla','Noah','Ava','Leo','Sophia'],['Smith','Jones','Williams','Brown','Davies','Evans','Wilson','Thomas','Roberts','Johnson']],'MM':[['Aung','Myat','Thaw','Hlaing','Zin','Nandar','Ei','Khin','San','Min'],['Oo','Maung','Win','Htwe','Lwin','Kyi','Zaw','Than','Aye','Soe']],'TH':[['Pornchai','Somsak','Suchart','Chai','Malee','Suchada','Nonglak','Supaporn','Anan','Chaiwat'],['Ruangrit','Jaturong','Somsri','Chaiyot','Pornprasert','Wong','Lim','Tan','Chai','Somsak']],'JP':[['Ren','Yui','Haruto','Aoi','Sota','Himari','Minato','Riko','Yuto','Sakura'],['Sato','Suzuki','Takahashi','Tanaka','Watanabe','Ito','Nakamura','Kobayashi','Yamamoto','Kato']]};
+ const d=N[c]||N['US'];
+ return rnd(d[0])+' '+rnd(d[1]);
+}
+
+function pwd(){
+ const ch='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+ let p='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[rint(0,25)]+'abcdefghijklmnopqrstuvwxyz'[rint(0,25)]+'0123456789'[rint(0,9)]+'!@#$%^&*()_+'[rint(0,11)];
+ for(let i=0;i<8;i++)p+=ch[rint(0,ch.length-1)];
+ return p.split('').sort(()=>0.5-Math.random()).join('');
+}
+
+function dob(){
+ return rint(1960,2005)+'-'+rint(1,12).toString().padStart(2,'0')+'-'+rint(1,28).toString().padStart(2,'0');
+}
+
+function gen(code){
+ const d=C[code];
+ if(!d)return null;
+ const ci=rnd(d.ci);
+ const sn=rnd(ci[3]);
+ const fn=name(code);
+ const un=fn.toLowerCase().replace(/\s+/g,'.');
+ return {
+  person_name:fn,
+  gender:Math.random()<0.5?'Male':'Female',
+  street_address:rint(1,999)+' '+sn,
+  city:ci[0],
+  state:ci[1],
+  postal_code:postal(code,ci[2]),
+  phone_number:phone(d.p,code),
+  email:un+rint(1,999)+'@'+rnd(['gmail.com','yahoo.com','outlook.com','hotmail.com']),
+  date_of_birth:dob(),
+  password:pwd(),
+  country:d.n,
+  country_code:code,
+  flag:d.f,
+  currency:d.c
+ };
+}
+
+export default{
+ async fetch(req){
+  const h={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, OPTIONS','Access-Control-Allow-Headers':'Content-Type'};
+  if(req.method==='OPTIONS')return new Response(null,{headers:h});
+  if(req.method!=='GET')return new Response(JSON.stringify({error:'Use GET'}),{status:405,headers:{...h,'Content-Type':'application/json'}});
+  const u=new URL(req.url);
+  const p=u.pathname;
+  if(p==='/'||p==='/health')return new Response(JSON.stringify({status:'ok',service:'Fake Address API',version:'2.0',total_countries:Object.keys(C).length,supported_countries:Object.keys(C),endpoints:{address:'/api/address?code=US',countries:'/api/countries'}}),{headers:{...h,'Content-Type':'application/json'}});
+  if(p==='/api/countries'){const cs=Object.entries(C).map(([k,v])=>({code:k,name:v.n,flag:v.f,currency:v.c}));return new Response(JSON.stringify({total:cs.length,countries:cs},null,2),{headers:{...h,'Content-Type':'application/json'}})}
+  if(p==='/api/address'){
+   const cc=u.searchParams.get('code');
+   if(!cc)return new Response(JSON.stringify({error:'Missing code',example:'/api/address?code=US',supported:Object.keys(C)}),{status:400,headers:{...h,'Content-Type':'application/json'}});
+   const c=cc.toUpperCase();
+   if(!C[c])return new Response(JSON.stringify({error:'Country '+c+' not supported',supported:Object.keys(C)}),{status:404,headers:{...h,'Content-Type':'application/json'}});
+   const a=gen(c);
+   return new Response(JSON.stringify({success:true,data:a},null,2),{headers:{...h,'Content-Type':'application/json'}});
+  }
+  return new Response(JSON.stringify({error:'Not found'}),{status:404,headers:{...h,'Content-Type':'application/json'}});
+ }
 };
