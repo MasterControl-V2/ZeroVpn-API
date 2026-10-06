@@ -1,0 +1,336 @@
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+
+function getRandomElement(arr) {
+    if (!arr || arr.length === 0) return null;
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generatePostalCode(countryCode, postalPrefix) {
+    const code = countryCode.toUpperCase();
+    
+    if (code === 'US') {
+        return postalPrefix + getRandomInt(10, 99);
+    } else if (code === 'UK') {
+        const letters = 'ABDEFGHJLNPQRSTUWXYZ';
+        return postalPrefix + getRandomInt(1, 9) + letters[getRandomInt(0, 19)] + ' ' + getRandomInt(1, 9) + letters[getRandomInt(0, 19)] + letters[getRandomInt(0, 19)];
+    } else if (code === 'CA') {
+        const letters = 'ABCEGHJKLMNPRSTVXY';
+        return postalPrefix + getRandomInt(0, 9) + letters[getRandomInt(0, 19)] + ' ' + getRandomInt(0, 9) + letters[getRandomInt(0, 19)] + getRandomInt(0, 9);
+    } else if (code === 'AU' || code === 'NZ' || code === 'MM' || code === 'TH' || code === 'SG' || code === 'DE' || code === 'FR' || code === 'IT' || code === 'ES' || code === 'JP' || code === 'KR' || code === 'CN' || code === 'IN' || code === 'BR' || code === 'RU' || code === 'ZA' || code === 'NL' || code === 'BE' || code === 'CH' || code === 'SE' || code === 'NO' || code === 'DK' || code === 'FI' || code === 'IE' || code === 'MX' || code === 'AR' || code === 'TR') {
+        return postalPrefix + getRandomInt(0, 999).toString().padStart(3, '0');
+    } else if (code === 'AE' || code === 'SA' || code === 'PK' || code === 'BD' || code === 'LK' || code === 'NP') {
+        return postalPrefix + getRandomInt(10000, 99999).toString();
+    }
+    
+    return postalPrefix + getRandomInt(100, 999);
+}
+
+function generatePhoneNumber(phoneCode, countryCode) {
+    const code = countryCode.toUpperCase();
+    
+    if (code === 'US' || code === 'CA') {
+        return `${phoneCode}${getRandomInt(200, 999)}${getRandomInt(200, 999)}${getRandomInt(1000, 9999)}`;
+    } else if (code === 'UK') {
+        return `${phoneCode}7${getRandomInt(100, 999)}${getRandomInt(100000, 999999)}`;
+    } else if (code === 'AU') {
+        return `${phoneCode}4${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'MM') {
+        return `${phoneCode}9${getRandomInt(200000000, 999999999)}`;
+    } else if (code === 'TH') {
+        return `${phoneCode}${getRandomInt(80, 99)}${getRandomInt(1000000, 9999999)}`;
+    } else if (code === 'SG') {
+        return `${phoneCode}${getRandomInt(8000, 9999)}${getRandomInt(1000, 9999)}`;
+    } else if (code === 'DE') {
+        return `${phoneCode}${getRandomInt(150, 179)}${getRandomInt(1000000, 9999999)}`;
+    } else if (code === 'FR') {
+        return `${phoneCode}6${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'JP') {
+        return `${phoneCode}${getRandomInt(70, 90)}${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'KR') {
+        return `${phoneCode}10${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'CN') {
+        return `${phoneCode}1${getRandomInt(3000000000, 9999999999)}`;
+    } else if (code === 'IN') {
+        return `${phoneCode}9${getRandomInt(1000000000, 9999999999)}`;
+    } else if (code === 'BR') {
+        return `${phoneCode}${getRandomInt(11000000000, 99999999999)}`;
+    } else if (code === 'RU') {
+        return `${phoneCode}9${getRandomInt(1000000000, 9999999999)}`;
+    } else if (code === 'ZA') {
+        return `${phoneCode}${getRandomInt(600000000, 899999999)}`;
+    } else if (code === 'IT') {
+        return `${phoneCode}3${getRandomInt(1000000000, 9999999999)}`;
+    } else if (code === 'ES') {
+        return `${phoneCode}6${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'NL') {
+        return `${phoneCode}6${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'BE') {
+        return `${phoneCode}4${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'CH') {
+        return `${phoneCode}7${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'SE') {
+        return `${phoneCode}7${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'NO') {
+        return `${phoneCode}4${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'DK') {
+        return `${phoneCode}${getRandomInt(20000000, 99999999)}`;
+    } else if (code === 'FI') {
+        return `${phoneCode}4${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'IE') {
+        return `${phoneCode}8${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'NZ') {
+        return `${phoneCode}2${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'TR') {
+        return `${phoneCode}5${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'AE') {
+        return `${phoneCode}5${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'SA') {
+        return `${phoneCode}5${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'PK') {
+        return `${phoneCode}3${getRandomInt(1000000000, 9999999999)}`;
+    } else if (code === 'BD') {
+        return `${phoneCode}1${getRandomInt(1000000000, 9999999999)}`;
+    } else if (code === 'LK') {
+        return `${phoneCode}7${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'NP') {
+        return `${phoneCode}98${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'MY') {
+        return `${phoneCode}1${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'ID') {
+        return `${phoneCode}8${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'PH') {
+        return `${phoneCode}9${getRandomInt(100000000, 999999999)}`;
+    } else if (code === 'VN') {
+        return `${phoneCode}${getRandomInt(300000000, 999999999)}`;
+    } else if (code === 'MX') {
+        return `${phoneCode}${getRandomInt(1000000000, 9999999999)}`;
+    } else if (code === 'AR') {
+        return `${phoneCode}9${getRandomInt(1000000000, 9999999999)}`;
+    }
+    
+    return `${phoneCode}${getRandomInt(100000000, 999999999)}`;
+}
+
+function generateFullName(countryCode) {
+    const names = {
+        'US': { first: ['James', 'John', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph', 'Thomas', 'Charles', 'Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen'], last: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson'] },
+        'UK': { first: ['Oliver', 'Olivia', 'George', 'Amelia', 'Harry', 'Isla', 'Noah', 'Ava', 'Leo', 'Sophia', 'Jack', 'Mia', 'Charlie', 'Emily', 'Jacob'], last: ['Smith', 'Jones', 'Williams', 'Brown', 'Davies', 'Evans', 'Wilson', 'Thomas', 'Roberts', 'Johnson', 'Walker', 'Wright', 'Robinson', 'Thompson', 'White'] },
+        'CA': { first: ['Liam', 'Olivia', 'Noah', 'Emma', 'Oliver', 'Charlotte', 'William', 'Ava', 'Benjamin', 'Sophia', 'Lucas', 'Chloe', 'Jack', 'Emily', 'Ethan'], last: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee'] },
+        'AU': { first: ['Oliver', 'Charlotte', 'Noah', 'Olivia', 'William', 'Amelia', 'Leo', 'Isla', 'Jack', 'Mia', 'Henry', 'Ava', 'Charlie', 'Grace', 'Thomas'], last: ['Smith', 'Jones', 'Williams', 'Brown', 'Wilson', 'Miller', 'Davies', 'Jackson', 'Ryan', 'Thomas', 'Thompson', 'White', 'Martin', 'Anderson', 'Taylor'] },
+        'DE': { first: ['Maximilian', 'Alexander', 'Paul', 'Leon', 'Ben', 'Felix', 'Jonas', 'Lukas', 'Emma', 'Mia', 'Hannah', 'Sofia', 'Marie', 'Lena', 'Anna'], last: ['Müller', 'Schmidt', 'Schneider', 'Fischer', 'Weber', 'Meyer', 'Wagner', 'Becker', 'Schulz', 'Hoffmann', 'Koch', 'Bauer', 'Richter', 'Klein', 'Wolf'] },
+        'FR': { first: ['Gabriel', 'Louis', 'Raphaël', 'Jules', 'Adam', 'Lucas', 'Léo', 'Hugo', 'Emma', 'Jade', 'Louise', 'Alice', 'Chloé', 'Léa', 'Manon'], last: ['Martin', 'Bernard', 'Dubois', 'Thomas', 'Robert', 'Richard', 'Petit', 'Durand', 'Leroy', 'Moreau', 'Simon', 'Laurent', 'Lefebvre', 'Michel', 'Garcia'] },
+        'JP': { first: ['Ren', 'Yui', 'Haruto', 'Aoi', 'Sota', 'Himari', 'Minato', 'Riko', 'Yuto', 'Sakura', 'Riku', 'Ichika', 'Kaito', 'Akari', 'Sho'], last: ['Sato', 'Suzuki', 'Takahashi', 'Tanaka', 'Watanabe', 'Ito', 'Nakamura', 'Kobayashi', 'Yamamoto', 'Kato', 'Yoshida', 'Yamada', 'Sasaki', 'Yamaguchi', 'Matsumoto'] },
+        'MM': { first: ['Aung', 'Myat', 'Thaw', 'Hlaing', 'Zin', 'Nandar', 'Ei', 'Khin', 'San', 'Min', 'Kyaw', 'Soe', 'Htun', 'Win', 'Naing'], last: ['Oo', 'Maung', 'Win', 'Htwe', 'Lwin', 'Kyi', 'Zaw', 'Than', 'Aye', 'Soe', 'Tun', 'Myint', 'Hlaing', 'Moe', 'Thein'] },
+        'TH': { first: ['Pornchai', 'Somsak', 'Suchart', 'Chai', 'Malee', 'Suchada', 'Nonglak', 'Supaporn', 'Anan', 'Chaiwat', 'Somchai', 'Nattaya', 'Pornthip', 'Kanya', 'Wichai'], last: ['Ruangrit', 'Jaturong', 'Somsri', 'Chaiyot', 'Pornprasert', 'Wong', 'Lim', 'Tan', 'Chai', 'Somsak', 'Suwan', 'Kanya', 'Sri', 'Phong', 'Chaiyaporn'] },
+        'SG': { first: ['Wei', 'Li', 'Hui', 'Jian', 'Mei', 'Tian', 'Chun', 'Xiao', 'Ying', 'Jun', 'Siew', 'Bee', 'Hock', 'Kim', 'Lian'], last: ['Tan', 'Lim', 'Lee', 'Ng', 'Wong', 'Chua', 'Goh', 'Koh', 'Teo', 'Tay', 'Ong', 'Sim', 'Yeo', 'Ang', 'Chong'] },
+        'IT': { first: ['Leonardo', 'Francesco', 'Alessandro', 'Lorenzo', 'Mattia', 'Andrea', 'Gabriele', 'Riccardo', 'Sofia', 'Giulia', 'Aurora', 'Alice', 'Ginevra', 'Emma', 'Giorgia'], last: ['Rossi', 'Russo', 'Ferrari', 'Esposito', 'Bianchi', 'Romano', 'Colombo', 'Ricci', 'Marino', 'Greco', 'Bruno', 'Gallo', 'Conti', 'De Luca', 'Mancini'] },
+        'ES': { first: ['Hugo', 'Martín', 'Lucas', 'Daniel', 'Alejandro', 'Pablo', 'Manuel', 'Álvaro', 'Lucía', 'Sofía', 'Martina', 'María', 'Julia', 'Paula', 'Emma'], last: ['García', 'Fernández', 'González', 'Rodríguez', 'López', 'Martínez', 'Sánchez', 'Pérez', 'Gómez', 'Martín', 'Jiménez', 'Ruiz', 'Hernández', 'Díaz', 'Moreno'] },
+        'CH': { first: ['Noah', 'Liam', 'Luca', 'Leon', 'Louis', 'Elias', 'Matteo', 'David', 'Mia', 'Emma', 'Sofia', 'Lena', 'Lina', 'Laura', 'Elena'], last: ['Müller', 'Meier', 'Schmid', 'Keller', 'Weber', 'Huber', 'Meyer', 'Fischer', 'Ammann', 'Baumann', 'Brunner', 'Steiner', 'Berger', 'Wagner', 'Suter'] },
+        'SE': { first: ['William', 'Liam', 'Noah', 'Lucas', 'Oliver', 'Oscar', 'Elias', 'Hugo', 'Alice', 'Maja', 'Elsa', 'Astrid', 'Vera', 'Alma', 'Ebba'], last: ['Andersson', 'Johansson', 'Karlsson', 'Nilsson', 'Eriksson', 'Larsson', 'Olsson', 'Persson', 'Svensson', 'Gustafsson', 'Pettersson', 'Jonsson', 'Jansson', 'Hansson', 'Bengtsson'] },
+        'NO': { first: ['Jakob', 'Emil', 'Noah', 'Oliver', 'Filip', 'Lucas', 'William', 'Oskar', 'Nora', 'Emma', 'Olivia', 'Ella', 'Sofie', 'Leah', 'Maja'], last: ['Hansen', 'Johansen', 'Olsen', 'Larsen', 'Andersen', 'Pedersen', 'Nilsen', 'Kristiansen', 'Jensen', 'Karlsen', 'Johnsen', 'Pettersen', 'Eriksen', 'Berg', 'Haugen'] },
+        'DK': { first: ['William', 'Noah', 'Oscar', 'Carl', 'August', 'Valdemar', 'Malthe', 'Alfred', 'Ida', 'Alma', 'Freja', 'Agnes', 'Ella', 'Clara', 'Anna'], last: ['Jensen', 'Nielsen', 'Hansen', 'Pedersen', 'Andersen', 'Christensen', 'Larsen', 'Sørensen', 'Rasmussen', 'Jørgensen', 'Petersen', 'Madsen', 'Kristensen', 'Olsen', 'Thomsen'] },
+        'FI': { first: ['Leo', 'Eino', 'Väinö', 'Onni', 'Elias', 'Oliver', 'Lucas', 'Eemeli', 'Sofia', 'Aino', 'Helmi', 'Ellen', 'Aurora', 'Elsa', 'Venla'], last: ['Korhonen', 'Virtanen', 'Mäkinen', 'Nieminen', 'Mäkelä', 'Hämäläinen', 'Laine', 'Koskinen', 'Järvinen', 'Lehtonen', 'Lehtinen', 'Saarinen', 'Salminen', 'Heinonen', 'Niemi'] },
+        'IE': { first: ['Jack', 'James', 'Daniel', 'Conor', 'Sean', 'Noah', 'Fionn', 'Oisin', 'Emily', 'Grace', 'Ava', 'Sophie', 'Mia', 'Saoirse', 'Ciara'], last: ['Murphy', 'Kelly', 'Sullivan', 'Walsh', 'Smith', 'O\'Brien', 'Byrne', 'Ryan', 'O\'Connor', 'O\'Neill', 'O\'Reilly', 'Doyle', 'McCarthy', 'Gallagher', 'Kennedy'] },
+        'NZ': { first: ['Oliver', 'Jack', 'George', 'William', 'Noah', 'James', 'Hunter', 'Charlie', 'Isla', 'Charlotte', 'Olivia', 'Amelia', 'Emily', 'Sophie', 'Ella'], last: ['Smith', 'Wilson', 'Williams', 'Brown', 'Taylor', 'Clark', 'Thompson', 'Walker', 'Anderson', 'Martin', 'Scott', 'Young', 'King', 'Wright', 'Hill'] },
+        'TR': { first: ['Ahmet', 'Mehmet', 'Mustafa', 'Ali', 'Hüseyin', 'İbrahim', 'Yusuf', 'Murat', 'Fatma', 'Ayşe', 'Emine', 'Hatice', 'Zeynep', 'Elif', 'Meryem'], last: ['Yılmaz', 'Kaya', 'Demir', 'Şahin', 'Çelik', 'Yıldız', 'Yıldırım', 'Öztürk', 'Aydın', 'Özdemir', 'Arslan', 'Doğan', 'Kılıç', 'Aslan', 'Çetin'] },
+        'AE': { first: ['Mohammed', 'Ahmed', 'Ali', 'Omar', 'Khalid', 'Saeed', 'Hamad', 'Sultan', 'Fatima', 'Mariam', 'Aisha', 'Noura', 'Salma', 'Reem', 'Lama'], last: ['Al Maktoum', 'Al Nahyan', 'Al Qasimi', 'Al Nuaimi', 'Al Sharqi', 'Al Mualla', 'Al Mansoori', 'Al Suwaidi', 'Al Muhairi', 'Al Zaabi', 'Al Shamsi', 'Al Hammadi', 'Al Dhaheri', 'Al Ketbi', 'Al Falasi'] },
+        'SA': { first: ['Mohammed', 'Abdullah', 'Ahmed', 'Faisal', 'Khalid', 'Sultan', 'Fahd', 'Salman', 'Fatima', 'Noura', 'Sara', 'Reem', 'Hala', 'Lama', 'Aisha'], last: ['Al Saud', 'Al Otaibi', 'Al Harbi', 'Al Qahtani', 'Al Ghamdi', 'Al Dossari', 'Al Mutairi', 'Al Shehri', 'Al Zahrani', 'Al Anazi', 'Al Shammari', 'Al Subaie', 'Al Rashed', 'Al Harthi', 'Al Juhani'] },
+        'PK': { first: ['Muhammad', 'Ahmed', 'Ali', 'Hassan', 'Usman', 'Hamza', 'Bilal', 'Omar', 'Fatima', 'Ayesha', 'Zainab', 'Maryam', 'Khadija', 'Hafsa', 'Aisha'], last: ['Khan', 'Ahmed', 'Ali', 'Malik', 'Hussain', 'Sheikh', 'Syed', 'Muhammad', 'Butt', 'Chaudhry', 'Qureshi', 'Siddiqui', 'Abbasi', 'Mirza', 'Baig'] },
+        'BD': { first: ['Mohammad', 'Abdul', 'Ahmed', 'Rahim', 'Karim', 'Hasan', 'Rafiq', 'Jamal', 'Fatema', 'Ayesha', 'Rahima', 'Salma', 'Nasrin', 'Rokeya', 'Shirin'], last: ['Rahman', 'Hossain', 'Ahmed', 'Islam', 'Khan', 'Chowdhury', 'Ali', 'Uddin', 'Mia', 'Sarkar', 'Akter', 'Begum', 'Bhuiyan', 'Talukder', 'Mollah'] },
+        'LK': { first: ['Nimal', 'Kamal', 'Sunil', 'Ranjith', 'Ashan', 'Dilan', 'Kasun', 'Lahiru', 'Kamala', 'Nimali', 'Sachini', 'Dilrukshi', 'Anjali', 'Tharushi', 'Nadeesha'], last: ['Perera', 'Silva', 'Fernando', 'Bandara', 'Gunawardena', 'Jayawardena', 'Wickramasinghe', 'Rajapaksa', 'Kumarasiri', 'Dissanayake', 'Ranasinghe', 'Herath', 'Gunasekara', 'Wijesinghe', 'Amarasinghe'] },
+        'NP': { first: ['Ram', 'Shyam', 'Hari', 'Krishna', 'Bishnu', 'Prakash', 'Suresh', 'Ramesh', 'Sita', 'Gita', 'Radha', 'Laxmi', 'Sarita', 'Anita', 'Sunita'], last: ['Sharma', 'Thapa', 'Gurung', 'Magar', 'Rai', 'Limbu', 'Tamang', 'Sherpa', 'Adhikari', 'Bhattarai', 'Poudel', 'Karki', 'Basnet', 'Dahal', 'Pandey'] },
+        'MY': { first: ['Ahmad', 'Muhammad', 'Abdul', 'Amin', 'Faizal', 'Hafiz', 'Ismail', 'Rizal', 'Siti', 'Nur', 'Aishah', 'Fatimah', 'Zainab', 'Aminah', 'Hawa'], last: ['bin Abdullah', 'bin Hassan', 'bin Ahmad', 'bin Ismail', 'bin Osman', 'binti Abdullah', 'binti Hassan', 'binti Ahmad', 'binti Ismail', 'binti Osman', 'Tan', 'Lim', 'Lee', 'Wong', 'Chong'] },
+        'ID': { first: ['Budi', 'Agus', 'Joko', 'Slamet', 'Bambang', 'Andi', 'Rudi', 'Hendra', 'Siti', 'Dewi', 'Sri', 'Nur', 'Fitri', 'Indah', 'Ratna'], last: ['Santoso', 'Wijaya', 'Setiawan', 'Kusuma', 'Pratama', 'Nugroho', 'Susanto', 'Hidayat', 'Wibowo', 'Saputra', 'Hartono', 'Lestari', 'Rahayu', 'Sari', 'Putri'] },
+        'PH': { first: ['Juan', 'Jose', 'Pedro', 'Antonio', 'Manuel', 'Carlos', 'Miguel', 'Josefina', 'Maria', 'Ana', 'Rosa', 'Carmen', 'Luz', 'Elena', 'Isabel'], last: ['Santos', 'Reyes', 'Cruz', 'Garcia', 'Bautista', 'Ramos', 'Mendoza', 'Flores', 'Gonzales', 'Aquino', 'Villanueva', 'Dela Cruz', 'Torres', 'Castillo', 'Rivera'] },
+        'VN': { first: ['Nguyen', 'Tran', 'Le', 'Pham', 'Hoang', 'Huynh', 'Phan', 'Vu', 'Dang', 'Bui', 'Van', 'Thi', 'Minh', 'Duc', 'Thanh'], last: ['An', 'Binh', 'Cuong', 'Dung', 'Hai', 'Hung', 'Khanh', 'Long', 'Nam', 'Phong', 'Quan', 'Son', 'Thanh', 'Tuan', 'Viet'] },
+        'KR': { first: ['Minjun', 'Seojun', 'Do-yun', 'Ji-ho', 'Joon-woo', 'Jin-woo', 'Ha-jun', 'Seo-yeon', 'Ji-woo', 'Min-seo', 'Ha-eun', 'Seo-yun', 'Ji-yoo', 'Ye-eun', 'Su-bin'], last: ['Kim', 'Lee', 'Park', 'Choi', 'Jung', 'Kang', 'Cho', 'Yoon', 'Jang', 'Lim', 'Han', 'Oh', 'Seo', 'Shin', 'Kwon'] },
+        'CN': { first: ['Wei', 'Jun', 'Jian', 'Hui', 'Ming', 'Gang', 'Lei', 'Ying', 'Fang', 'Xiu', 'Mei', 'Li', 'Lan', 'Hong', 'Qing'], last: ['Wang', 'Li', 'Zhang', 'Liu', 'Chen', 'Yang', 'Huang', 'Zhao', 'Wu', 'Zhou', 'Xu', 'Sun', 'Ma', 'Zhu', 'Hu'] },
+        'IN': { first: ['Raj', 'Amit', 'Sanjay', 'Vijay', 'Rahul', 'Ravi', 'Anil', 'Sunil', 'Priya', 'Anjali', 'Pooja', 'Neha', 'Sneha', 'Kavita', 'Divya'], last: ['Sharma', 'Kumar', 'Singh', 'Patel', 'Verma', 'Gupta', 'Reddy', 'Rao', 'Nair', 'Menon', 'Iyer', 'Jain', 'Shah', 'Mehta', 'Chopra'] },
+        'BR': { first: ['Gabriel', 'Miguel', 'Arthur', 'Davi', 'Heitor', 'Théo', 'Lucas', 'Pedro', 'Alice', 'Sophia', 'Helena', 'Valentina', 'Laura', 'Isabella', 'Manuela'], last: ['Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Alves', 'Pereira', 'Lima', 'Gomes', 'Costa', 'Ribeiro', 'Martins', 'Carvalho', 'Almeida'] },
+        'RU': { first: ['Alexander', 'Maxim', 'Ivan', 'Artyom', 'Dmitry', 'Mikhail', 'Sergei', 'Andrei', 'Anna', 'Maria', 'Anastasia', 'Sofia', 'Victoria', 'Ekaterina', 'Daria'], last: ['Ivanov', 'Smirnov', 'Kuznetsov', 'Popov', 'Vasiliev', 'Petrov', 'Sokolov', 'Mikhailov', 'Novikov', 'Fedorov', 'Morozov', 'Volkov', 'Alekseev', 'Lebedev', 'Semenov'] },
+        'ZA': { first: ['Sipho', 'Thabo', 'Bongani', 'Mandla', 'Sizwe', 'Lwazi', 'Siyabonga', 'Themba', 'Nomusa', 'Zanele', 'Nolwazi', 'Ayanda', 'Thandi', 'Lerato', 'Lindiwe'], last: ['Dlamini', 'Nkosi', 'Ndlovu', 'Khumalo', 'Moyo', 'Mahlangu', 'Sithole', 'Zulu', 'Mabaso', 'Mthembu', 'Jacobs', 'Williams', 'Petersen', 'Botha', 'Van der Merwe'] },
+        'NL': { first: ['Daan', 'Sem', 'Lucas', 'Finn', 'Levi', 'Bram', 'Noah', 'Luuk', 'Emma', 'Sanne', 'Julia', 'Sophie', 'Anna', 'Mila', 'Zoë'], last: ['De Jong', 'Jansen', 'De Vries', 'Van den Berg', 'Van Dijk', 'Bakker', 'Janssen', 'Visser', 'Smit', 'Meijer', 'De Boer', 'Mulder', 'De Groot', 'Bos', 'Vos'] },
+        'BE': { first: ['Noah', 'Liam', 'Louis', 'Arthur', 'Lucas', 'Jules', 'Victor', 'Hugo', 'Olivia', 'Emma', 'Louise', 'Elise', 'Alice', 'Juliette', 'Charlotte'], last: ['Peeters', 'Janssens', 'Maes', 'Jacobs', 'Mertens', 'Willems', 'Claes', 'Goossens', 'Wouters', 'De Smet', 'Vermeulen', 'Lambert', 'Dupont', 'Dubois', 'Martin'] },
+        'MX': { first: ['José', 'Juan', 'Miguel', 'Luis', 'Carlos', 'Jorge', 'Francisco', 'Alejandro', 'María', 'Guadalupe', 'Ana', 'Sofía', 'Fernanda', 'Valentina', 'Ximena'], last: ['Hernández', 'García', 'Martínez', 'López', 'González', 'Rodríguez', 'Pérez', 'Sánchez', 'Ramírez', 'Cruz', 'Flores', 'Gómez', 'Morales', 'Vázquez', 'Jiménez'] },
+        'AR': { first: ['Juan', 'Santiago', 'Mateo', 'Lautaro', 'Thiago', 'Benjamín', 'Franco', 'Joaquín', 'Sofía', 'Valentina', 'Emma', 'Martina', 'Catalina', 'Julieta', 'Delfina'], last: ['González', 'Rodríguez', 'Gómez', 'Fernández', 'López', 'Díaz', 'Martínez', 'Pérez', 'García', 'Sánchez', 'Romero', 'Sosa', 'Torres', 'Álvarez', 'Ruiz'] }
+    };
+    
+    const nameSet = names[countryCode.toUpperCase()] || names['US'];
+    return `${getRandomElement(nameSet.first)} ${getRandomElement(nameSet.last)}`;
+}
+
+function generatePassword() {
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+    let password = "";
+    password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[getRandomInt(0, 25)];
+    password += "abcdefghijklmnopqrstuvwxyz"[getRandomInt(0, 25)];
+    password += "0123456789"[getRandomInt(0, 9)];
+    password += "!@#$%^&*()_+"[getRandomInt(0, 11)];
+    for (let i = 0; i < 8; i++) {
+        password += chars[getRandomInt(0, chars.length - 1)];
+    }
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
+}
+
+function generateEmail(fullName, countryCode) {
+    const cleanName = fullName.toLowerCase().replace(/\s+/g, '.');
+    const domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'mail.com'];
+    return `${cleanName}${getRandomInt(1, 999)}@${getRandomElement(domains)}`;
+}
+
+function generateDateOfBirth() {
+    const year = getRandomInt(1960, 2005);
+    const month = getRandomInt(1, 12).toString().padStart(2, '0');
+    const day = getRandomInt(1, 28).toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// ============================================================
+// MAIN GENERATOR
+// ============================================================
+
+function generateAddress(countryCode) {
+    const code = countryCode.toUpperCase();
+    const country = COUNTRY_DATA[code];
+    
+    if (!country) return null;
+    
+    const cityData = getRandomElement(country.cities);
+    const streetName = getRandomElement(cityData.streets);
+    const streetNumber = getRandomInt(1, 999);
+    const postalCode = generatePostalCode(code, cityData.postalPrefix);
+    const phoneNumber = generatePhoneNumber(country.phoneCode, code);
+    const fullName = generateFullName(code);
+    const gender = Math.random() < 0.5 ? 'Male' : 'Female';
+    const email = generateEmail(fullName, code);
+    const dob = generateDateOfBirth();
+    const password = generatePassword();
+    
+    return {
+        person_name: fullName,
+        gender: gender,
+        street_address: `${streetNumber} ${streetName}`,
+        city: cityData.city,
+        state: cityData.state,
+        postal_code: postalCode,
+        phone_number: phoneNumber,
+        email: email,
+        date_of_birth: dob,
+        password: password,
+        country: country.name,
+        country_code: code,
+        flag: country.flag,
+        currency: country.currency
+    };
+}
+
+// ============================================================
+// REQUEST HANDLER
+// ============================================================
+
+export default {
+    async fetch(request, env, ctx) {
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+        };
+        
+        if (request.method === 'OPTIONS') {
+            return new Response(null, { headers: corsHeaders });
+        }
+        
+        if (request.method !== 'GET') {
+            return new Response(JSON.stringify({ 
+                error: 'Method not allowed. Use GET.' 
+            }), {
+                status: 405,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        
+        const url = new URL(request.url);
+        const path = url.pathname;
+        
+        if (path === '/' || path === '/health') {
+            return new Response(JSON.stringify({
+                status: 'ok',
+                service: 'Fake Address Generator API',
+                version: '2.0.0',
+                total_countries: Object.keys(COUNTRY_DATA).length,
+                supported_countries: Object.keys(COUNTRY_DATA),
+                endpoints: {
+                    address: '/api/address?code=US',
+                    countries: '/api/countries'
+                }
+            }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        
+        if (path === '/api/countries') {
+            const countries = Object.entries(COUNTRY_DATA).map(([code, data]) => ({
+                code: code,
+                name: data.name,
+                flag: data.flag,
+                currency: data.currency
+            }));
+            return new Response(JSON.stringify({
+                total: countries.length,
+                countries: countries
+            }, null, 2), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        
+        if (path === '/api/address') {
+            const countryCode = url.searchParams.get('code');
+            
+            if (!countryCode) {
+                return new Response(JSON.stringify({
+                    error: 'Missing parameter: code',
+                    example: '/api/address?code=US',
+                    supported: Object.keys(COUNTRY_DATA)
+                }), {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+            
+            const code = countryCode.toUpperCase();
+            
+            if (!COUNTRY_DATA[code]) {
+                return new Response(JSON.stringify({
+                    error: `Country code '${code}' is not supported`,
+                    supported: Object.keys(COUNTRY_DATA)
+                }), {
+                    status: 404,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+            
+            const address = generateAddress(code);
+            
+            return new Response(JSON.stringify({
+                success: true,
+                data: address
+            }, null, 2), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        
+        return new Response(JSON.stringify({
+            error: 'Not found',
+            available_endpoints: ['/', '/health', '/api/countries', '/api/address?code=XX']
+        }), {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
+};
