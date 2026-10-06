@@ -1,0 +1,388 @@
+// fake-address-api Worker
+// Custom API for generating real-looking addresses
+// Copyright (C) t.me/nkka404 — Adapted for personal use
+
+// ============================================================
+// COUNTRY DATA — Real cities, streets, postal formats
+// ============================================================
+
+const COUNTRY_DATA = {
+    'US': {
+        name: 'United States',
+        flag: '🇺🇸',
+        currency: 'USD',
+        phoneCode: '+1',
+        cities: [
+            { city: 'New York', state: 'New York', postalPrefix: '100', streets: ['Broadway', '5th Avenue', 'Madison Avenue', 'Wall Street', 'Park Avenue', 'Lexington Avenue', 'Amsterdam Avenue', 'Columbus Avenue', 'Riverside Drive', 'Central Park West'] },
+            { city: 'Los Angeles', state: 'California', postalPrefix: '900', streets: ['Hollywood Boulevard', 'Sunset Boulevard', 'Rodeo Drive', 'Wilshire Boulevard', 'Melrose Avenue', 'Vine Street', 'Highland Avenue', 'Fairfax Avenue', 'La Brea Avenue', 'Crenshaw Boulevard'] },
+            { city: 'Chicago', state: 'Illinois', postalPrefix: '606', streets: ['Michigan Avenue', 'State Street', 'Clark Street', 'Halsted Street', 'Ashland Avenue', 'Western Avenue', 'Fullerton Avenue', 'Belmont Avenue', 'Division Street', 'North Avenue'] },
+            { city: 'Houston', state: 'Texas', postalPrefix: '770', streets: ['Main Street', 'Westheimer Road', 'Richmond Avenue', 'Kirby Drive', 'Shepherd Drive', 'Montrose Boulevard', 'Bellaire Boulevard', 'Fannin Street', 'Travis Street', 'Milam Street'] },
+            { city: 'Phoenix', state: 'Arizona', postalPrefix: '850', streets: ['Central Avenue', 'Camelback Road', 'Indian School Road', 'Thomas Road', 'McDowell Road', 'Van Buren Street', 'Washington Street', 'Jefferson Street', 'Glendale Avenue', 'Northern Avenue'] },
+            { city: 'Philadelphia', state: 'Pennsylvania', postalPrefix: '191', streets: ['Market Street', 'Broad Street', 'Chestnut Street', 'Walnut Street', 'Locust Street', 'Spruce Street', 'Pine Street', 'South Street', 'Race Street', 'Arch Street'] },
+            { city: 'San Antonio', state: 'Texas', postalPrefix: '782', streets: ['Alamo Plaza', 'Houston Street', 'Commerce Street', 'Market Street', 'Broadway', 'St. Mary\'s Street', 'Navarro Street', 'Losoya Street', 'Presa Street', 'Flores Street'] },
+            { city: 'San Diego', state: 'California', postalPrefix: '921', streets: ['Broadway', 'Harbor Drive', 'Pacific Highway', 'India Street', 'Garnet Avenue', 'Mission Boulevard', 'El Cajon Boulevard', 'University Avenue', 'Adams Avenue', 'La Jolla Boulevard'] },
+            { city: 'Dallas', state: 'Texas', postalPrefix: '752', streets: ['Main Street', 'Elm Street', 'Commerce Street', 'Ross Avenue', 'McKinney Avenue', 'Greenville Avenue', 'Mockingbird Lane', 'Lovers Lane', 'Northwest Highway', 'Preston Road'] },
+            { city: 'San Jose', state: 'California', postalPrefix: '951', streets: ['First Street', 'Santa Clara Street', 'Alameda Boulevard', 'The Alameda', 'Meridian Avenue', 'Bascom Avenue', 'Winchester Boulevard', 'Stevens Creek Boulevard', 'El Camino Real', 'Blossom Hill Road'] }
+        ]
+    },
+    'UK': {
+        name: 'United Kingdom',
+        flag: '🇬🇧',
+        currency: 'GBP',
+        phoneCode: '+44',
+        cities: [
+            { city: 'London', state: 'England', postalPrefix: 'SW1A', streets: ['Oxford Street', 'Regent Street', 'Bond Street', 'Baker Street', 'Abbey Road', 'Downing Street', 'Piccadilly', 'Fleet Street', 'Strand', 'King\'s Road'] },
+            { city: 'Birmingham', state: 'England', postalPrefix: 'B1', streets: ['New Street', 'Corporation Street', 'Bull Street', 'High Street', 'Broad Street', 'Colmore Row', 'Paradise Street', 'Hill Street', 'Priory Queensway', 'Moor Street'] },
+            { city: 'Manchester', state: 'England', postalPrefix: 'M1', streets: ['Deansgate', 'Oxford Road', 'Market Street', 'King Street', 'Piccadilly', 'Portland Street', 'Princess Street', 'Mosley Street', 'John Dalton Street', 'Whitworth Street'] },
+            { city: 'Glasgow', state: 'Scotland', postalPrefix: 'G1', streets: ['Buchanan Street', 'Argyle Street', 'Sauchiehall Street', 'Hope Street', 'Renfield Street', 'Jamaica Street', 'Union Street', 'Queen Street', 'Ingram Street', 'George Square'] },
+            { city: 'Liverpool', state: 'England', postalPrefix: 'L1', streets: ['Bold Street', 'Church Street', 'Lord Street', 'Castle Street', 'Dale Street', 'James Street', 'Victoria Street', 'Renshaw Street', 'Ranelagh Street', 'Hanover Street'] },
+            { city: 'Bristol', state: 'England', postalPrefix: 'BS1', streets: ['Park Street', 'Clifton Down', 'Whiteladies Road', 'Gloucester Road', 'Baldwin Street', 'Corn Street', 'Broad Street', 'Queen Square', 'King Street', 'Welsh Back'] },
+            { city: 'Sheffield', state: 'England', postalPrefix: 'S1', streets: ['Fargate', 'The Moor', 'Pinstone Street', 'Division Street', 'West Street', 'Devonshire Street', 'Ecclesall Road', 'London Road', 'Glossop Road', 'Sharrow Vale Road'] },
+            { city: 'Leeds', state: 'England', postalPrefix: 'LS1', streets: ['Briggate', 'Headrow', 'Boar Lane', 'Vicar Lane', 'Kirkgate', 'Call Lane', 'Millennium Square', 'Park Row', 'Wellington Street', 'Albion Street'] },
+            { city: 'Edinburgh', state: 'Scotland', postalPrefix: 'EH1', streets: ['Royal Mile', 'Princes Street', 'George Street', 'Rose Street', 'Queen Street', 'Victoria Street', 'Grassmarket', 'Cowgate', 'Canongate', 'Leith Walk'] },
+            { city: 'Leicester', state: 'England', postalPrefix: 'LE1', streets: ['Belgrave Road', 'Granby Street', 'Market Street', 'High Street', 'Gallowtree Gate', 'Church Gate', 'St. Martin\'s', 'Humberstone Gate', 'London Road', 'Welford Road'] }
+        ]
+    },
+    'CA': {
+        name: 'Canada',
+        flag: '🇨🇦',
+        currency: 'CAD',
+        phoneCode: '+1',
+        cities: [
+            { city: 'Toronto', state: 'Ontario', postalPrefix: 'M5H', streets: ['Yonge Street', 'Queen Street West', 'King Street West', 'Bloor Street', 'Dundas Street', 'College Street', 'Spadina Avenue', 'Bay Street', 'Front Street', 'University Avenue'] },
+            { city: 'Montreal', state: 'Quebec', postalPrefix: 'H3Z', streets: ['Rue Sainte-Catherine', 'Boulevard Saint-Laurent', 'Rue Sherbrooke', 'Avenue du Mont-Royal', 'Rue Saint-Denis', 'Boulevard René-Lévesque', 'Rue Peel', 'Rue Crescent', 'Rue Notre-Dame', 'Boulevard De Maisonneuve'] },
+            { city: 'Vancouver', state: 'British Columbia', postalPrefix: 'V6B', streets: ['Robson Street', 'Granville Street', 'Burrard Street', 'Georgia Street', 'Davie Street', 'Denman Street', 'Hastings Street', 'Broadway', 'Main Street', 'Cambie Street'] },
+            { city: 'Calgary', state: 'Alberta', postalPrefix: 'T2P', streets: ['Stephen Avenue', '8th Avenue SW', '17th Avenue SW', '4th Street SW', 'Macleod Trail', 'Centre Street', 'Edmonton Trail', 'Crowchild Trail', 'Deerfoot Trail', 'Glenmore Trail'] },
+            { city: 'Edmonton', state: 'Alberta', postalPrefix: 'T5J', streets: ['Jasper Avenue', 'Whyte Avenue', '104th Street', '124th Street', 'Stony Plain Road', 'Kingsway', 'Calgary Trail', 'Gateway Boulevard', 'Capilano Drive', 'Terwillegar Drive'] },
+            { city: 'Ottawa', state: 'Ontario', postalPrefix: 'K1P', streets: ['Bank Street', 'Rideau Street', 'Elgin Street', 'Sparks Street', 'Wellington Street', 'Preston Street', 'Somerset Street', 'Richmond Road', 'Carling Avenue', 'Merivale Road'] },
+            { city: 'Winnipeg', state: 'Manitoba', postalPrefix: 'R3C', streets: ['Portage Avenue', 'Main Street', 'Broadway', 'Corydon Avenue', 'Osborne Street', 'Academy Road', 'Grant Avenue', 'Pembina Highway', 'St. Mary\'s Road', 'Regent Avenue'] },
+            { city: 'Quebec City', state: 'Quebec', postalPrefix: 'G1R', streets: ['Rue Saint-Jean', 'Rue Sainte-Anne', 'Grande Allée', 'Boulevard René-Lévesque', 'Rue Cartier', 'Avenue Cartier', 'Rue Saint-Louis', 'Rue d\'Auteuil', 'Boulevard Laurier', 'Rue Saint-Paul'] },
+            { city: 'Hamilton', state: 'Ontario', postalPrefix: 'L8P', streets: ['King Street West', 'Main Street West', 'James Street North', 'Barton Street', 'Ottawa Street', 'Concession Street', 'Upper James Street', 'Mohawk Road', 'Fennell Avenue', 'Rymal Road'] },
+            { city: 'Halifax', state: 'Nova Scotia', postalPrefix: 'B3J', streets: ['Barrington Street', 'Spring Garden Road', 'Quinpool Road', 'Robie Street', 'Gottingen Street', 'Agricola Street', 'Dresden Row', 'Blowers Street', 'Argyle Street', 'Sackville Street'] }
+        ]
+    },
+    'AU': {
+        name: 'Australia',
+        flag: '🇦🇺',
+        currency: 'AUD',
+        phoneCode: '+61',
+        cities: [
+            { city: 'Sydney', state: 'New South Wales', postalPrefix: '2000', streets: ['George Street', 'Pitt Street', 'Oxford Street', 'King Street', 'Elizabeth Street', 'Castlereagh Street', 'Macquarie Street', 'York Street', 'Kent Street', 'Sussex Street'] },
+            { city: 'Melbourne', state: 'Victoria', postalPrefix: '3000', streets: ['Bourke Street', 'Collins Street', 'Flinders Street', 'Swanston Street', 'Elizabeth Street', 'Chapel Street', 'Toorak Road', 'Lygon Street', 'Brunswick Street', 'Smith Street'] },
+            { city: 'Brisbane', state: 'Queensland', postalPrefix: '4000', streets: ['Queen Street', 'Adelaide Street', 'George Street', 'Edward Street', 'Ann Street', 'Eagle Street', 'Creek Street', 'Wharf Street', 'Charlotte Street', 'Mary Street'] },
+            { city: 'Perth', state: 'Western Australia', postalPrefix: '6000', streets: ['St Georges Terrace', 'Hay Street', 'Murray Street', 'Wellington Street', 'Barrack Street', 'William Street', 'Beaufort Street', 'Scarborough Beach Road', 'Albany Highway', 'Canning Highway'] },
+            { city: 'Adelaide', state: 'South Australia', postalPrefix: '5000', streets: ['Rundle Mall', 'King William Street', 'North Terrace', 'Hindley Street', 'Grenfell Street', 'Currie Street', 'Waymouth Street', 'Grote Street', 'Wakefield Street', 'Flinders Street'] },
+            { city: 'Gold Coast', state: 'Queensland', postalPrefix: '4217', streets: ['Surfers Paradise Boulevard', 'Cavill Avenue', 'Orchid Avenue', 'Elkhorn Avenue', 'Beach Road', 'Ferry Road', 'Bundall Road', 'Gold Coast Highway', 'Ocean Avenue', 'Staghorn Avenue'] },
+            { city: 'Canberra', state: 'Australian Capital Territory', postalPrefix: '2600', streets: ['Northbourne Avenue', 'Commonwealth Avenue', 'Kings Avenue', 'Parkes Way', 'Constitution Avenue', 'London Circuit', 'Barry Drive', 'Belconnen Way', 'Gungahlin Drive', 'Tuggeranong Parkway'] },
+            { city: 'Newcastle', state: 'New South Wales', postalPrefix: '2300', streets: ['Hunter Street', 'King Street', 'Darby Street', 'Beaumont Street', 'Glebe Road', 'Parry Street', 'Wickham Street', 'Honeysuckle Drive', 'Wharf Road', 'Pacific Highway'] },
+            { city: 'Wollongong', state: 'New South Wales', postalPrefix: '2500', streets: ['Crown Street', 'Keira Street', 'Market Street', 'Burelli Street', 'Corrimal Street', 'Gipps Street', 'Church Street', 'Flinders Street', 'Kembla Street', 'Smith Street'] },
+            { city: 'Geelong', state: 'Victoria', postalPrefix: '3220', streets: ['Moorabool Street', 'Malop Street', 'Little Malop Street', 'Ryrie Street', 'Yarra Street', 'Pakington Street', 'Shannon Avenue', 'Bellarine Highway', 'Barwon Heads Road', 'Torquay Road'] }
+        ]
+    },
+    'MM': {
+        name: 'Myanmar',
+        flag: '🇲🇲',
+        currency: 'MMK',
+        phoneCode: '+95',
+        cities: [
+            { city: 'Yangon', state: 'Yangon Region', postalPrefix: '111', streets: ['Sule Pagoda Road', 'Maha Bandula Road', 'Anawrahta Road', 'Bogyoke Aung San Road', 'Kabar Aye Pagoda Road', 'Pyay Road', 'University Avenue', 'Inya Road', 'Strand Road', 'Merchant Road'] },
+            { city: 'Mandalay', state: 'Mandalay Region', postalPrefix: '050', streets: ['Zegyo Market', '84th Street', '26th Street', '78th Street', '35th Street', 'Mandalay Palace', 'U Bein Bridge', 'Mandalay Hill', 'Shwenandaw', 'Kuthodaw'] },
+            { city: 'Naypyidaw', state: 'Naypyidaw Union Territory', postalPrefix: '150', streets: ['Yaza Htarni Road', 'Naypyidaw Taw Win', 'Zabuthiri', 'Ottarathiri', 'Dekkhinathiri', 'Pobbathiri', 'Tatkon', 'Lewe', 'Pyinmana', 'Thar Si'] },
+            { city: 'Mawlamyine', state: 'Mon State', postalPrefix: '120', streets: ['Strand Road', 'Lower Main Road', 'Upper Main Road', 'Bogyoke Road', 'Thaton Road', 'Moulmein Market', 'Kyaikthanlan Pagoda', 'Ngwe Moe', 'Zwekapin', 'Mudon Road'] },
+            { city: 'Bago', state: 'Bago Region', postalPrefix: '080', streets: ['Bogyoke Road', 'Shwe Maw Daw Road', 'Kyaik Pun', 'Hintha Gone', 'Maha Kalyani', 'Zaytawun', 'Kyauk Tan', 'Waw', 'Thanatpin', 'Kawa'] },
+            { city: 'Pathein', state: 'Ayeyarwady Region', postalPrefix: '100', streets: ['Myaung Mya Road', 'Bogyoke Road', 'Strand Road', 'Shwemokhtaw Pagoda', 'Pathein Market', 'Kangyidaunt', 'Ngapudaw', 'Thabaung', 'Kyaunggon', 'Einme'] },
+            { city: 'Myitkyina', state: 'Kachin State', postalPrefix: '010', streets: ['Zaydan Road', 'Aung Mingalar', 'Manhkrin', 'Sut Ngai Naw', 'Dukhtawng', 'Malikha', 'Waingmaw', 'Mogaung', 'Chipwi', 'Putao'] },
+            { city: 'Taunggyi', state: 'Shan State', postalPrefix: '060', streets: ['Bogyoke Road', 'Zay Tan', 'Kandawgyi', 'Shwe Nyaung', 'Aye Thar Yar', 'Nyaung Shwe', 'Kalaw', 'Pindaya', 'Ywar Ngan', 'Hopong'] },
+            { city: 'Sittwe', state: 'Rakhine State', postalPrefix: '070', streets: ['Strand Road', 'Main Road', 'Bogyoke Road', 'Sittwe Market', 'View Point', 'Ponnagyun', 'Rathedaung', 'Kyaukpyu', 'Mrauk U', 'Thandwe'] },
+            { city: 'Meiktila', state: 'Mandalay Region', postalPrefix: '051', streets: ['Bogyoke Road', 'Myoma Market', 'Kandawgyi', 'Meiktila Lake', 'Wundwin', 'Mahlaing', 'Thazi', 'Yamethin', 'Pyawbwe', 'Tatkon'] }
+        ]
+    },
+    'TH': {
+        name: 'Thailand',
+        flag: '🇹🇭',
+        currency: 'THB',
+        phoneCode: '+66',
+        cities: [
+            { city: 'Bangkok', state: 'Bangkok', postalPrefix: '101', streets: ['Sukhumvit Road', 'Silom Road', 'Sathorn Road', 'Khao San Road', 'Rama I Road', 'Ploenchit Road', 'Wireless Road', 'Ratchadamri Road', 'Rama IV Road', 'Asok Road'] },
+            { city: 'Chiang Mai', state: 'Chiang Mai', postalPrefix: '500', streets: ['Nimmanhaemin Road', 'Tha Phae Road', 'Ratchadamnoen Road', 'Moon Muang Road', 'Chang Klan Road', 'Huay Kaew Road', 'Super Highway', 'Canal Road', 'Loi Kroh Road', 'Wualai Road'] },
+            { city: 'Phuket', state: 'Phuket', postalPrefix: '830', streets: ['Bangla Road', 'Rat-U-Thit 200 Pi Road', 'Thaweewong Road', 'Phuket Road', 'Chalong Road', 'Thepkrassattri Road', 'Sirirat Road', 'Kata Road', 'Karon Road', 'Patong Beach Road'] },
+            { city: 'Pattaya', state: 'Chonburi', postalPrefix: '201', streets: ['Beach Road', 'Walking Street', 'Second Road', 'Third Road', 'Sukhumvit Road', 'Pratamnak Road', 'Jomtien Beach Road', 'Thepprasit Road', 'South Pattaya Road', 'North Pattaya Road'] },
+            { city: 'Hat Yai', state: 'Songkhla', postalPrefix: '901', streets: ['Niphat Uthit 1 Road', 'Niphat Uthit 2 Road', 'Niphat Uthit 3 Road', 'Phetkasem Road', 'Sriphuwanart Road', 'Supasarnrangsan Road', 'Thammanoonvithi Road', 'Pracharak Road', 'Chotevithee Road', 'Saengthong Road'] },
+            { city: 'Udon Thani', state: 'Udon Thani', postalPrefix: '410', streets: ['Mittraphap Road', 'Pho Sri Road', 'Srisuk Road', 'Udon Dusadee Road', 'Nittayo Road', 'Thahan Road', 'Prajak Road', 'Sathanee Road', 'Mak Khaeng Road', 'Nong Bua Road'] },
+            { city: 'Nakhon Ratchasima', state: 'Nakhon Ratchasima', postalPrefix: '300', streets: ['Ratchadamnoen Road', 'Mittraphap Road', 'Chomphon Road', 'Hua Thale Road', 'Suranaree Road', 'Yommarat Road', 'Patchasema Road', 'Phoklang Road', 'Assadang Road', 'Kumon Road'] },
+            { city: 'Surat Thani', state: 'Surat Thani', postalPrefix: '840', streets: ['Talad Mai Road', 'Na Mueang Road', 'Chon Kasem Road', 'Ban Don Road', 'Sri Wichai Road', 'Khao Hua Jook Road', 'Rim Kok Road', 'Donnok Road', 'Wat Pho Road', 'Karoon Rat Road'] },
+            { city: 'Khon Kaen', state: 'Khon Kaen', postalPrefix: '400', streets: ['Mittraphap Road', 'Na Muang Road', 'Srichan Road', 'Klankluang Road', 'Ruen Rom Road', 'Pracha Samran Road', 'Sri Chan Road', 'Sothon Road', 'Chayangkul Road', 'Rob Mueang Road'] },
+            { city: 'Nakhon Si Thammarat', state: 'Nakhon Si Thammarat', postalPrefix: '800', streets: ['Ratchadamnoen Road', 'Tha Wang Road', 'Pattanakarn Khu Khwang Road', 'Si Thammasok Road', 'Phra Pak Road', 'Karaboon Road', 'Nakhon Nueang Khet Road', 'Na Mueang Road', 'Chaiya Road', 'Maha Rat Road'] }
+        ]
+    },
+    'SG': {
+        name: 'Singapore',
+        flag: '🇸🇬',
+        currency: 'SGD',
+        phoneCode: '+65',
+        cities: [
+            { city: 'Singapore', state: 'Central Region', postalPrefix: '018', streets: ['Orchard Road', 'Marina Bay Sands', 'Sentosa', 'Bugis Street', 'Clarke Quay', 'Chinatown', 'Little India', 'Kampong Glam', 'Riverside', 'Holland Village'] },
+            { city: 'Jurong', state: 'West Region', postalPrefix: '609', streets: ['Jurong East Street', 'Jurong West Street', 'Boon Lay Way', 'Pioneer Road', 'Tuas Road', 'International Road', 'Corporation Road', 'Penjuru Road', 'Jalan Buroh', 'Benoi Road'] },
+            { city: 'Woodlands', state: 'North Region', postalPrefix: '730', streets: ['Woodlands Avenue', 'Woodlands Drive', 'Woodlands Street', 'Marsiling Road', 'Admiralty Road', 'Sembawang Road', 'Canberra Road', 'Gambas Avenue', 'Wellington Road', 'Riverside Road'] },
+            { city: 'Tampines', state: 'East Region', postalPrefix: '520', streets: ['Tampines Avenue', 'Tampines Street', 'Pasir Ris Drive', 'Bedok North Road', 'Simei Street', 'Changi Road', 'Upper Changi Road', 'Eunos Link', 'Kaki Bukit Road', 'Ubi Avenue'] },
+            { city: 'Yishun', state: 'North Region', postalPrefix: '760', streets: ['Yishun Avenue', 'Yishun Street', 'Yishun Ring Road', 'Khatib Road', 'Sembawang Road', 'Canberra Link', 'Springleaf Road', 'Miltonia Close', 'Jalan Mata Ayer', 'Yishun Central'] },
+            { city: 'Ang Mo Kio', state: 'Central Region', postalPrefix: '560', streets: ['Ang Mo Kio Avenue', 'Ang Mo Kio Street', 'Ang Mo Kio Industrial Park', 'Ang Mo Kio Central', 'Kebun Baru Link', 'Cheng San Road', 'Yio Chu Kang Road', 'Anderson Road', 'Jalan Kayu', 'Seletar Road'] },
+            { city: 'Bedok', state: 'East Region', postalPrefix: '460', streets: ['Bedok North Avenue', 'Bedok South Avenue', 'Bedok Reservoir Road', 'Bedok Road', 'New Upper Changi Road', 'Chai Chee Road', 'Kembangan Road', 'Frankel Avenue', 'Telok Kurau Road', 'Jalan Eunos'] },
+            { city: 'Hougang', state: 'North-East Region', postalPrefix: '530', streets: ['Hougang Avenue', 'Hougang Street', 'Hougang Central', 'Upper Serangoon Road', 'Buangkok Green', 'Buangkok Link', 'Kovan Road', 'Florence Road', 'Lim Ah Pin Road', 'Jalan Telang'] },
+            { city: 'Punggol', state: 'North-East Region', postalPrefix: '820', streets: ['Punggol Avenue', 'Punggol Drive', 'Punggol Road', 'Punggol Central', 'Punggol Field', 'Punggol Way', 'Punggol Place', 'Edgedale Plains', 'Waterway', 'Sentul Crescent'] },
+            { city: 'Sengkang', state: 'North-East Region', postalPrefix: '790', streets: ['Sengkang Avenue', 'Sengkang East Road', 'Sengkang West Road', 'Sengkang Square', 'Compassvale Drive', 'Rivervale Drive', 'Fernvale Road', 'Anchorvale Road', 'Jalan Kayu', 'Buangkok Drive'] }
+        ]
+    }
+    // နောက်ထပ် နိုင်ငံတွေ ထပ်ထည့်နိုင်ပါတယ်
+};
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+
+function getRandomElement(arr) {
+    if (!arr || arr.length === 0) return null;
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generatePostalCode(countryCode, postalPrefix) {
+    const code = countryCode.toUpperCase();
+    
+    if (code === 'US') {
+        // US: 5-digit ZIP
+        return postalPrefix + getRandomInt(10, 99);
+    } else if (code === 'UK') {
+        // UK: alphanumeric like SW1A 1AA
+        const letters = 'ABDEFGHJLNPQRSTUWXYZ';
+        return postalPrefix + getRandomInt(1, 9) + letters[getRandomInt(0, 19)] + ' ' + getRandomInt(1, 9) + letters[getRandomInt(0, 19)] + letters[getRandomInt(0, 19)];
+    } else if (code === 'CA') {
+        // CA: A1A 1A1 format
+        const letters = 'ABCEGHJKLMNPRSTVXY';
+        return postalPrefix + getRandomInt(0, 9) + letters[getRandomInt(0, 19)] + ' ' + getRandomInt(0, 9) + letters[getRandomInt(0, 19)] + getRandomInt(0, 9);
+    } else if (code === 'AU') {
+        // AU: 4-digit
+        return postalPrefix + getRandomInt(0, 99).toString().padStart(2, '0');
+    } else if (code === 'MM' || code === 'TH' || code === 'SG') {
+        // MM/TH/SG: numeric
+        return postalPrefix + getRandomInt(0, 999).toString().padStart(3, '0');
+    }
+    
+    return postalPrefix + getRandomInt(100, 999);
+}
+
+function generatePhoneNumber(phoneCode, countryCode) {
+    const code = countryCode.toUpperCase();
+    
+    if (code === 'US' || code === 'CA') {
+        return `${phoneCode}${getRandomInt(200, 999)}${getRandomInt(200, 999)}${getRandomInt(1000, 9999)}`;
+    } else if (code === 'UK') {
+        return `${phoneCode}7${getRandomInt(100, 999)}${getRandomInt(100000, 999999)}`;
+    } else if (code === 'AU') {
+        return `${phoneCode}4${getRandomInt(10000000, 99999999)}`;
+    } else if (code === 'MM') {
+        return `${phoneCode}9${getRandomInt(200000000, 999999999)}`;
+    } else if (code === 'TH') {
+        return `${phoneCode}${getRandomInt(80, 99)}${getRandomInt(1000000, 9999999)}`;
+    } else if (code === 'SG') {
+        return `${phoneCode}${getRandomInt(8000, 9999)}${getRandomInt(1000, 9999)}`;
+    }
+    
+    return `${phoneCode}${getRandomInt(100000000, 999999999)}`;
+}
+
+function generateFullName(countryCode) {
+    const names = {
+        'US': { first: ['James', 'John', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph', 'Thomas', 'Charles', 'Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen'], last: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson'] },
+        'UK': { first: ['Oliver', 'Olivia', 'George', 'Amelia', 'Harry', 'Isla', 'Noah', 'Ava', 'Leo', 'Sophia', 'Jack', 'Mia', 'Charlie', 'Emily', 'Jacob'], last: ['Smith', 'Jones', 'Williams', 'Brown', 'Davies', 'Evans', 'Wilson', 'Thomas', 'Roberts', 'Johnson', 'Walker', 'Wright', 'Robinson', 'Thompson', 'White'] },
+        'CA': { first: ['Liam', 'Olivia', 'Noah', 'Emma', 'Oliver', 'Charlotte', 'William', 'Ava', 'Benjamin', 'Sophia', 'Lucas', 'Chloe', 'Jack', 'Emily', 'Ethan'], last: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee'] },
+        'AU': { first: ['Oliver', 'Charlotte', 'Noah', 'Olivia', 'William', 'Amelia', 'Leo', 'Isla', 'Jack', 'Mia', 'Henry', 'Ava', 'Charlie', 'Grace', 'Thomas'], last: ['Smith', 'Jones', 'Williams', 'Brown', 'Wilson', 'Miller', 'Davies', 'Jackson', 'Ryan', 'Thomas', 'Thompson', 'White', 'Martin', 'Anderson', 'Taylor'] },
+        'MM': { first: ['Aung', 'Myat', 'Thaw', 'Hlaing', 'Zin', 'Nandar', 'Ei', 'Khin', 'San', 'Min', 'Kyaw', 'Soe', 'Htun', 'Win', 'Naing'], last: ['Oo', 'Maung', 'Win', 'Htwe', 'Lwin', 'Kyi', 'Zaw', 'Than', 'Aye', 'Soe', 'Tun', 'Myint', 'Hlaing', 'Moe', 'Thein'] },
+        'TH': { first: ['Pornchai', 'Somsak', 'Suchart', 'Chai', 'Malee', 'Suchada', 'Nonglak', 'Supaporn', 'Anan', 'Chaiwat', 'Somchai', 'Nattaya', 'Pornthip', 'Kanya', 'Wichai'], last: ['Ruangrit', 'Jaturong', 'Somsri', 'Chaiyot', 'Pornprasert', 'Wong', 'Lim', 'Tan', 'Chai', 'Somsak', 'Suwan', 'Kanya', 'Sri', 'Phong', 'Chaiyaporn'] },
+        'SG': { first: ['Wei', 'Li', 'Hui', 'Jian', 'Mei', 'Tian', 'Chun', 'Xiao', 'Ying', 'Jun', 'Siew', 'Bee', 'Hock', 'Kim', 'Lian'], last: ['Tan', 'Lim', 'Lee', 'Ng', 'Wong', 'Chua', 'Goh', 'Koh', 'Teo', 'Tay', 'Ong', 'Sim', 'Yeo', 'Ang', 'Chong'] }
+    };
+    
+    const nameSet = names[countryCode.toUpperCase()] || names['US'];
+    return `${getRandomElement(nameSet.first)} ${getRandomElement(nameSet.last)}`;
+}
+
+function generatePassword() {
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+    let password = "";
+    password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[getRandomInt(0, 25)];
+    password += "abcdefghijklmnopqrstuvwxyz"[getRandomInt(0, 25)];
+    password += "0123456789"[getRandomInt(0, 9)];
+    password += "!@#$%^&*()_+"[getRandomInt(0, 11)];
+    for (let i = 0; i < 8; i++) {
+        password += chars[getRandomInt(0, chars.length - 1)];
+    }
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
+}
+
+function generateEmail(fullName, countryCode) {
+    const cleanName = fullName.toLowerCase().replace(/\s+/g, '.');
+    const domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'mail.com'];
+    return `${cleanName}${getRandomInt(1, 999)}@${getRandomElement(domains)}`;
+}
+
+function generateDateOfBirth() {
+    const year = getRandomInt(1960, 2005);
+    const month = getRandomInt(1, 12).toString().padStart(2, '0');
+    const day = getRandomInt(1, 28).toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// ============================================================
+// MAIN GENERATOR
+// ============================================================
+
+function generateAddress(countryCode) {
+    const code = countryCode.toUpperCase();
+    const country = COUNTRY_DATA[code];
+    
+    if (!country) {
+        return null;
+    }
+    
+    const cityData = getRandomElement(country.cities);
+    const streetName = getRandomElement(cityData.streets);
+    const streetNumber = getRandomInt(1, 999);
+    const postalCode = generatePostalCode(code, cityData.postalPrefix);
+    const phoneNumber = generatePhoneNumber(country.phoneCode, code);
+    const fullName = generateFullName(code);
+    const gender = Math.random() < 0.5 ? 'Male' : 'Female';
+    const email = generateEmail(fullName, code);
+    const dob = generateDateOfBirth();
+    const password = generatePassword();
+    
+    return {
+        person_name: fullName,
+        gender: gender,
+        street_address: `${streetNumber} ${streetName}`,
+        city: cityData.city,
+        state: cityData.state,
+        postal_code: postalCode,
+        phone_number: phoneNumber,
+        email: email,
+        date_of_birth: dob,
+        password: password,
+        country: country.name,
+        country_code: code,
+        flag: country.flag,
+        currency: country.currency
+    };
+}
+
+// ============================================================
+// REQUEST HANDLER
+// ============================================================
+
+export default {
+    async fetch(request, env, ctx) {
+        // CORS headers
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+        };
+        
+        // Handle OPTIONS preflight
+        if (request.method === 'OPTIONS') {
+            return new Response(null, { headers: corsHeaders });
+        }
+        
+        // Only allow GET
+        if (request.method !== 'GET') {
+            return new Response(JSON.stringify({ 
+                error: 'Method not allowed. Use GET.' 
+            }), {
+                status: 405,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        
+        const url = new URL(request.url);
+        const path = url.pathname;
+        
+        // Health check endpoint
+        if (path === '/' || path === '/health') {
+            return new Response(JSON.stringify({
+                status: 'ok',
+                service: 'Fake Address Generator API',
+                version: '1.0.0',
+                supported_countries: Object.keys(COUNTRY_DATA),
+                endpoints: {
+                    address: '/api/address?code=US',
+                    countries: '/api/countries'
+                }
+            }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        
+        // List supported countries
+        if (path === '/api/countries') {
+            const countries = Object.entries(COUNTRY_DATA).map(([code, data]) => ({
+                code: code,
+                name: data.name,
+                flag: data.flag,
+                currency: data.currency
+            }));
+            return new Response(JSON.stringify({
+                total: countries.length,
+                countries: countries
+            }, null, 2), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        
+        // Main address generation endpoint
+        if (path === '/api/address') {
+            const countryCode = url.searchParams.get('code');
+            
+            if (!countryCode) {
+                return new Response(JSON.stringify({
+                    error: 'Missing parameter: code',
+                    example: '/api/address?code=US',
+                    supported: Object.keys(COUNTRY_DATA)
+                }), {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+            
+            const code = countryCode.toUpperCase();
+            
+            if (!COUNTRY_DATA[code]) {
+                return new Response(JSON.stringify({
+                    error: `Country code '${code}' is not supported`,
+                    supported: Object.keys(COUNTRY_DATA)
+                }), {
+                    status: 404,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+            
+            const address = generateAddress(code);
+            
+            return new Response(JSON.stringify({
+                success: true,
+                data: address
+            }, null, 2), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+        
+        // 404 for unknown paths
+        return new Response(JSON.stringify({
+            error: 'Not found',
+            available_endpoints: ['/', '/health', '/api/countries', '/api/address?code=XX']
+        }), {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
+};
